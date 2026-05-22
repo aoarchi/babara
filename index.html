@@ -111,6 +111,11 @@
 
                             <div class="bg-[#121214] border border-stone-800/60 rounded-xl p-6 md:p-8 space-y-6 shadow-2xl">
                                 <div class="space-y-2">
+                                    <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Your Nickname</label>
+                                    <input id="host-nick" type="text" maxlength="12" placeholder="대화에서 표시될 내 이름"
+                                           class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
+                                </div>
+                                <div class="space-y-2">
                                     <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Room Topic</label>
                                     <input id="topic" type="text" placeholder="오늘 밤 뒷담화는 여기서. 비밀번호 아는 사람만 들어와."
                                            class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
@@ -332,10 +337,12 @@
             });
 
             document.getElementById('create-btn').addEventListener('click', async () => {
+                const hostNick = document.getElementById('host-nick').value.trim();
                 const topic    = document.getElementById('topic').value.trim();
                 const password = document.getElementById('password').value.trim();
                 const msg      = document.getElementById('create-msg');
 
+                if (!hostNick)        { showMsg(msg, '닉네임을 입력해주세요.', 'error'); return; }
                 if (!topic)           { showMsg(msg, '방 제목을 입력해주세요.', 'error'); return; }
                 if (!selectedExpiry)  { showMsg(msg, '체크아웃 일시를 선택해주세요.', 'error'); return; }
                 if (!password || password.length < 4) { showMsg(msg, '비밀번호 4자리를 입력해주세요.', 'error'); return; }
@@ -355,6 +362,7 @@
                     showMsg(msg, `링크: ${roomUrl}`, 'success');
                 }
 
+                sessionStorage.setItem(`barbara_nick_${roomId}`, hostNick);
                 sessionStorage.setItem(`barbara_auth_${roomId}`, '1');
                 setTimeout(() => { window.location.hash = `room/${roomId}`; }, 1200);
             });
