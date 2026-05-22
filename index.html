@@ -12,6 +12,7 @@
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #0B0B0C; }
         .font-serif-luxury { font-family: 'Cormorant Garamond', serif; }
+        .hidden-view { display: none !important; }
     </style>
 </head>
 <body class="text-stone-300 min-h-screen flex flex-col justify-between p-6 md:p-12 selection:bg-stone-700 selection:text-white">
@@ -22,25 +23,21 @@
         <p class="text-xs tracking-widest text-stone-500 uppercase mt-2 font-light">personal data 0% • transient room</p>
     </header>
 
-    <!-- CENTER: 메인 컨셉 및 방 생성 폼 -->
-    <main class="max-w-xl w-full mx-auto my-auto py-12">
+    <!-- ================= [VIEW 1: 메인 로비 화면] ================= -->
+    <main id="lobbyView" class="max-w-xl w-full mx-auto my-auto py-12">
         <div class="space-y-8">
-            <!-- 안내 문구 -->
             <div class="text-center space-y-2">
                 <p class="font-serif-luxury italic text-2xl text-stone-400">"Leave your traces, completely erased later."</p>
                 <p class="text-xs text-stone-500 font-light">카톡 사찰을 피해, 흔적 없이 증발할 우리들만의 비밀 객실을 개설하세요.</p>
             </div>
 
-            <!-- 핵심 입력 폼 -->
             <div class="bg-[#121214] border border-stone-800/60 rounded-xl p-6 md:p-8 space-y-6 shadow-2xl">
-                <!-- 1. 방 제목 / 하고 싶은 말 -->
                 <div class="space-y-2">
                     <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Room Topic (방 제목 / 첫 마디)</label>
                     <input type="text" placeholder="오늘 밤 뒷담화는 여기서. 비밀번호 아는 사람만 들어와." 
                            class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
                 </div>
 
-                <!-- 2. 투숙 기간 선택 (휘발성 옵션) -->
                 <div class="space-y-2">
                     <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Stay Period (투숙 기간)</label>
                     <div class="grid grid-cols-4 gap-2">
@@ -51,21 +48,56 @@
                     </div>
                 </div>
 
-                <!-- 3. 체크인 패스워드 설정 -->
                 <div class="space-y-2">
                     <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Room Password (객실 비밀번호)</label>
                     <input type="password" placeholder="참여자들이 입력할 마스터 키 숫자 4자리" 
                            class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
                 </div>
 
-                <!-- 실시간 생성될 URL 미리보기 (UI적 신뢰감 부여) -->
                 <div class="pt-2 text-center">
                     <p class="text-xs text-stone-600">생성될 주소: <span class="text-stone-400 font-mono">barbarahotel.com/room-702</span></p>
                 </div>
 
-                <!-- 버튼 -->
-                <button class="w-full bg-stone-200 hover:bg-white text-black font-medium text-sm py-3.5 rounded-lg transition-all shadow-lg active:scale-[0.99]">
+                <!-- 버튼을 누르면 다음 화면(Check-in)으로 전환되도록 고쳤습니다 -->
+                <button onclick="goToCheckIn()" class="w-full bg-stone-200 hover:bg-white text-black font-medium text-sm py-3.5 rounded-lg transition-all shadow-lg active:scale-[0.99]">
                     객실 생성 및 링크 복사하기 (Check-in)
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- ================= [VIEW 2: 객실 입장 / 체크인 화면] ================= -->
+    <main id="checkInView" class="max-w-xl w-full mx-auto my-auto py-12 hidden-view">
+        <div class="space-y-8">
+            <div class="text-center space-y-2">
+                <span class="text-[10px] uppercase border border-stone-700 px-2 py-0.5 rounded text-stone-500 font-mono tracking-widest">Room #702</span>
+                <p class="font-serif-luxury italic text-2xl text-stone-400 mt-2">"Enter the master key to step inside."</p>
+                <p class="text-xs text-stone-500 font-light">초대받은 객실에 입장하기 위해 비밀번호와 임시 닉네임을 입력하세요.</p>
+            </div>
+
+            <div class="bg-[#121214] border border-stone-800/60 rounded-xl p-6 md:p-8 space-y-6 shadow-2xl">
+                <!-- 1. 마스터 키 입력 -->
+                <div class="space-y-2">
+                    <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Master Key (비밀번호 확인)</label>
+                    <input type="password" placeholder="숫자 4자리를 입력하세요" 
+                           class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
+                </div>
+
+                <!-- 2. 임시 식별자 입력 (가입 절차 없음) -->
+                <div class="space-y-2">
+                    <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Temporary Nickname (임시 닉네임)</label>
+                    <input type="text" placeholder="방 안에서 사용할 이름 (예: 길동, 대리님)" 
+                           class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
+                    <p class="text-[11px] text-stone-600">※ 이 닉네임 역시 방이 폭파되면 서버에서 흔적 없이 영구 삭제됩니다.</p>
+                </div>
+
+                <!-- 입장 버튼 (누르면 나중에 대화방으로) -->
+                <button onclick="alert('성공! 다음 단계인 [실시간 대화방 UI]도 곧 대령하겠습니다.')" class="w-full bg-stone-200 hover:bg-white text-black font-medium text-sm py-3.5 rounded-lg transition-all shadow-lg active:scale-[0.99]">
+                    객실 입장하기 (Enter Room)
+                </button>
+                
+                <button onclick="goToLobby()" class="w-full text-stone-600 hover:text-stone-400 text-xs transition-colors py-1">
+                    ← 로비로 돌아가기
                 </button>
             </div>
         </div>
@@ -73,7 +105,6 @@
 
     <!-- BOTTOM: 룸서비스 광고 영역 가이드 및 푸터 -->
     <footer class="w-full max-w-xl mx-auto space-y-6 text-center">
-        <!-- 텔레그램 식 짜치지 않는 한 줄 텍스트 광고 미리보기 UI -->
         <div class="border-t border-dashed border-stone-800/80 pt-4">
             <div class="inline-flex items-center gap-2 bg-[#121214] border border-stone-800/40 px-4 py-1.5 rounded-full text-xs">
                 <span class="text-[10px] uppercase bg-stone-800 px-1.5 py-0.5 rounded text-stone-400 font-mono font-bold tracking-wider">Room Service</span>
@@ -82,6 +113,18 @@
         </div>
         <p class="text-[10px] text-stone-600 font-light tracking-widest uppercase">© 2026 barbara hotel. No logs. No trace. Only Conversation.</p>
     </footer>
+
+    <!-- 화면 전환용 프론트엔드 간단 스크립트 -->
+    <script>
+        function goToCheckIn() {
+            document.getElementById('lobbyView').classList.add('hidden-view');
+            document.getElementById('checkInView').classList.remove('hidden-view');
+        }
+        function goToLobby() {
+            document.getElementById('checkInView').classList.add('hidden-view');
+            document.getElementById('lobbyView').classList.remove('hidden-view');
+        }
+    </script>
 
 </body>
 </html>
