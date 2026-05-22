@@ -9,16 +9,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;1,300&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #0B0B0C; }
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #ffffff; }
         .font-serif-luxury { font-family: 'Cormorant Garamond', serif; }
-        .cal-day { width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; border-radius: 6px; transition: all 0.15s; color: #a8a29e; }
-        .cal-day:hover:not(:disabled) { background-color: #3f3f46; color: #e7e5e4; }
-        .cal-day.cal-selected { background-color: #e7e5e4 !important; color: #000 !important; font-weight: 600; }
-        .cal-day.cal-today { border: 1px solid #78716c; }
-        .cal-day:disabled { color: #292524; cursor: not-allowed; }
+        .cal-day { width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; border-radius: 6px; transition: all 0.15s; color: #333; }
+        .cal-day:hover:not(:disabled) { background-color: #e5e7eb; color: #000; }
+        .cal-day.cal-selected { background-color: #111 !important; color: #fff !important; font-weight: 600; }
+        .cal-day.cal-today { border: 1px solid #666; }
+        .cal-day:disabled { color: #ccc; cursor: not-allowed; }
     </style>
 </head>
-<body class="text-stone-300">
+<body class="text-stone-900 bg-white">
     <div id="app"></div>
 
     <script type="module">
@@ -98,7 +98,7 @@
             document.getElementById('app').innerHTML = `
                 <div class="min-h-screen flex flex-col justify-between p-6 md:p-12">
                     <header class="text-center md:text-left">
-                        <h1 class="font-serif-luxury text-4xl md:text-5xl tracking-widest text-stone-100 font-light lowercase">barbara hotel</h1>
+                        <h1 class="font-serif-luxury text-4xl md:text-5xl tracking-widest text-stone-900 font-light lowercase">barbara hotel</h1>
                         <p class="text-xs tracking-widest text-stone-500 uppercase mt-2 font-light">personal data 0% • transient room</p>
                     </header>
 
@@ -109,60 +109,60 @@
                                 <p class="text-xs text-stone-500 font-light">카톡 사찰을 피해, 흔적 없이 증발할 우리들만의 비밀 객실을 개설하세요.</p>
                             </div>
 
-                            <div class="bg-[#121214] border border-stone-800/60 rounded-xl p-6 md:p-8 space-y-6 shadow-2xl">
+                            <div class="bg-white border border-stone-200 rounded-xl p-6 md:p-8 space-y-6 shadow-md">
                                 <div class="space-y-2">
-                                    <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Your Nickname</label>
+                                    <label class="text-xs uppercase tracking-wider text-stone-600 font-medium">Your Nickname</label>
                                     <input id="host-nick" type="text" maxlength="12" placeholder="대화에서 표시될 내 이름"
-                                           class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
+                                           class="w-full bg-stone-50 border border-stone-300 rounded-lg px-4 py-3 text-sm text-stone-900 focus:outline-none focus:border-stone-500 transition-colors placeholder:text-stone-400">
                                 </div>
                                 <div class="space-y-2">
-                                    <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Room Topic</label>
+                                    <label class="text-xs uppercase tracking-wider text-stone-600 font-medium">Room Topic</label>
                                     <input id="topic" type="text" placeholder="오늘 밤 뒷담화는 여기서. 비밀번호 아는 사람만 들어와."
-                                           class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
+                                           class="w-full bg-stone-50 border border-stone-300 rounded-lg px-4 py-3 text-sm text-stone-900 focus:outline-none focus:border-stone-500 transition-colors placeholder:text-stone-400">
                                 </div>
 
                                 <div class="space-y-3">
-                                    <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Stay Period</label>
+                                    <label class="text-xs uppercase tracking-wider text-stone-600 font-medium">Stay Period</label>
 
                                     <!-- 빠른 선택 -->
                                     <div class="flex flex-wrap gap-2" id="quick-btns">
-                                        <button data-mins="1"     class="quick-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-800/50">1분</button>
-                                        <button data-mins="5"     class="quick-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-800/50">5분</button>
-                                        <button data-mins="30"    class="quick-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-800/50">30분</button>
-                                        <button data-mins="60"    class="quick-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-800/50">1시간</button>
-                                        <button data-mins="360"   class="quick-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-800/50">6시간</button>
-                                        <button data-mins="1440"  class="quick-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-800/50">1일</button>
-                                        <button data-mins="10080" class="quick-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-800/50">1주</button>
+                                        <button data-mins="1"     class="quick-btn bg-stone-50 text-stone-600 border border-stone-300 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-100">1분</button>
+                                        <button data-mins="5"     class="quick-btn bg-stone-50 text-stone-600 border border-stone-300 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-100">5분</button>
+                                        <button data-mins="30"    class="quick-btn bg-stone-50 text-stone-600 border border-stone-300 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-100">30분</button>
+                                        <button data-mins="60"    class="quick-btn bg-stone-50 text-stone-600 border border-stone-300 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-100">1시간</button>
+                                        <button data-mins="360"   class="quick-btn bg-stone-50 text-stone-600 border border-stone-300 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-100">6시간</button>
+                                        <button data-mins="1440"  class="quick-btn bg-stone-50 text-stone-600 border border-stone-300 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-100">1일</button>
+                                        <button data-mins="10080" class="quick-btn bg-stone-50 text-stone-600 border border-stone-300 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-100">1주</button>
                                     </div>
 
                                     <!-- 캘린더 -->
-                                    <div class="bg-[#18181B] border border-stone-800 rounded-lg p-4 space-y-3">
+                                    <div class="bg-stone-50 border border-stone-200 rounded-lg p-4 space-y-3">
                                         <div class="flex items-center justify-between">
-                                            <button id="cal-prev" class="text-stone-500 hover:text-stone-300 w-7 h-7 flex items-center justify-center rounded transition-colors text-base">‹</button>
-                                            <span id="cal-title" class="text-xs text-stone-400 font-medium tracking-wider"></span>
-                                            <button id="cal-next" class="text-stone-500 hover:text-stone-300 w-7 h-7 flex items-center justify-center rounded transition-colors text-base">›</button>
+                                            <button id="cal-prev" class="text-stone-500 hover:text-stone-800 w-7 h-7 flex items-center justify-center rounded transition-colors text-base">‹</button>
+                                            <span id="cal-title" class="text-xs text-stone-700 font-medium tracking-wider"></span>
+                                            <button id="cal-next" class="text-stone-500 hover:text-stone-800 w-7 h-7 flex items-center justify-center rounded transition-colors text-base">›</button>
                                         </div>
                                         <div class="grid grid-cols-7 text-center mb-1">
-                                            <span class="text-[10px] text-stone-600 py-0.5">일</span>
-                                            <span class="text-[10px] text-stone-600 py-0.5">월</span>
-                                            <span class="text-[10px] text-stone-600 py-0.5">화</span>
-                                            <span class="text-[10px] text-stone-600 py-0.5">수</span>
-                                            <span class="text-[10px] text-stone-600 py-0.5">목</span>
-                                            <span class="text-[10px] text-stone-600 py-0.5">금</span>
-                                            <span class="text-[10px] text-stone-600 py-0.5">토</span>
+                                            <span class="text-[10px] text-stone-500 py-0.5">일</span>
+                                            <span class="text-[10px] text-stone-500 py-0.5">월</span>
+                                            <span class="text-[10px] text-stone-500 py-0.5">화</span>
+                                            <span class="text-[10px] text-stone-500 py-0.5">수</span>
+                                            <span class="text-[10px] text-stone-500 py-0.5">목</span>
+                                            <span class="text-[10px] text-stone-500 py-0.5">금</span>
+                                            <span class="text-[10px] text-stone-500 py-0.5">토</span>
                                         </div>
                                         <div id="cal-grid" class="grid grid-cols-7 gap-0.5"></div>
 
                                         <!-- 시간 입력 (날짜 선택 후 표시) -->
-                                        <div id="time-row" class="hidden border-t border-stone-800 pt-3">
+                                        <div id="time-row" class="hidden border-t border-stone-200 pt-3">
                                             <div class="flex items-center justify-center gap-3">
-                                                <span class="text-xs text-stone-500">체크아웃 시간</span>
+                                                <span class="text-xs text-stone-600">체크아웃 시간</span>
                                                 <div class="flex items-center gap-1">
                                                     <input id="time-hour" type="number" min="0" max="23"
-                                                           class="w-12 bg-[#0B0B0C] border border-stone-700 rounded px-2 py-1.5 text-sm text-stone-200 text-center focus:outline-none focus:border-stone-500 transition-colors">
-                                                    <span class="text-stone-600 font-light">:</span>
+                                                           class="w-12 bg-white border border-stone-300 rounded px-2 py-1.5 text-sm text-stone-900 text-center focus:outline-none focus:border-stone-500 transition-colors">
+                                                    <span class="text-stone-400 font-light">:</span>
                                                     <input id="time-minute" type="number" min="0" max="59"
-                                                           class="w-12 bg-[#0B0B0C] border border-stone-700 rounded px-2 py-1.5 text-sm text-stone-200 text-center focus:outline-none focus:border-stone-500 transition-colors">
+                                                           class="w-12 bg-white border border-stone-300 rounded px-2 py-1.5 text-sm text-stone-900 text-center focus:outline-none focus:border-stone-500 transition-colors">
                                                 </div>
                                             </div>
                                         </div>
@@ -173,9 +173,9 @@
                                 </div>
 
                                 <div class="space-y-2">
-                                    <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Room Password</label>
+                                    <label class="text-xs uppercase tracking-wider text-stone-600 font-medium">Room Password</label>
                                     <input id="password" type="password" maxlength="4" placeholder="참여자들이 입력할 마스터 키 숫자 4자리"
-                                           class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
+                                           class="w-full bg-stone-50 border border-stone-300 rounded-lg px-4 py-3 text-sm text-stone-900 focus:outline-none focus:border-stone-500 transition-colors placeholder:text-stone-400">
                                 </div>
 
                                 <button id="create-btn" class="w-full bg-stone-200 hover:bg-white text-black font-medium text-sm py-3.5 rounded-lg transition-all shadow-lg active:scale-[0.99]">
@@ -187,13 +187,13 @@
                     </main>
 
                     <footer class="w-full max-w-xl mx-auto space-y-6 text-center">
-                        <div class="border-t border-dashed border-stone-800/80 pt-4">
-                            <div class="inline-flex items-center gap-2 bg-[#121214] border border-stone-800/40 px-4 py-1.5 rounded-full text-xs">
-                                <span class="text-[10px] uppercase bg-stone-800 px-1.5 py-0.5 rounded text-stone-400 font-mono font-bold tracking-wider">Room Service</span>
-                                <a href="#" class="text-stone-400 hover:underline font-light">"오늘 밤 대화에 어울리는 위스키 바 추천 (by 성수동 어메니티)"</a>
+                        <div class="border-t border-dashed border-stone-300 pt-4">
+                            <div class="inline-flex items-center gap-2 bg-stone-50 border border-stone-200 px-4 py-1.5 rounded-full text-xs">
+                                <span class="text-[10px] uppercase bg-stone-200 px-1.5 py-0.5 rounded text-stone-600 font-mono font-bold tracking-wider">Room Service</span>
+                                <a href="#" class="text-stone-500 hover:underline font-light">"오늘 밤 대화에 어울리는 위스키 바 추천 (by 성수동 어메니티)"</a>
                             </div>
                         </div>
-                        <p class="text-[10px] text-stone-600 font-light tracking-widest uppercase">© 2026 barbara hotel. No logs. No trace. Only Conversation.</p>
+                        <p class="text-[10px] text-stone-400 font-light tracking-widest uppercase">© 2026 barbara hotel. No logs. No trace. Only Conversation.</p>
                     </footer>
                 </div>
             `;
@@ -254,7 +254,7 @@
                 document.getElementById('time-row').classList.remove('hidden');
 
                 document.querySelectorAll('.quick-btn').forEach(b => {
-                    b.className = 'quick-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-800/50';
+                    b.className = 'quick-btn bg-stone-50 text-stone-600 border border-stone-300 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-100';
                 });
 
                 renderCalendar();
@@ -327,9 +327,9 @@
                 document.getElementById('time-row').classList.remove('hidden');
 
                 document.querySelectorAll('.quick-btn').forEach(b => {
-                    b.className = 'quick-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-800/50';
+                    b.className = 'quick-btn bg-stone-50 text-stone-600 border border-stone-300 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-100';
                 });
-                btn.className = 'quick-btn bg-stone-800 text-stone-200 border border-stone-700 text-xs px-3 py-1.5 rounded-lg font-medium transition-all';
+                btn.className = 'quick-btn bg-stone-800 text-white border border-stone-700 text-xs px-3 py-1.5 rounded-lg font-medium transition-all';
 
                 selectedExpiry = expiryTs;
                 renderCalendar();
@@ -353,6 +353,7 @@
 
                 const roomId = generateRoomId();
                 await set(ref(db, `rooms/${roomId}`), { topic, password, expiresAt: selectedExpiry, createdAt: Date.now() });
+                await push(ref(db, `rooms/${roomId}/nicknames`), hostNick);
 
                 const roomUrl = `${window.location.origin}${window.location.pathname}#room/${roomId}`;
                 try {
@@ -376,31 +377,31 @@
             }
 
             document.getElementById('app').innerHTML = `
-                <div class="min-h-screen flex flex-col items-center justify-center p-6">
+                <div class="min-h-screen flex flex-col items-center justify-center p-6 bg-white">
                     <div class="w-full max-w-sm space-y-8">
                         <div class="text-center">
-                            <h1 class="font-serif-luxury text-3xl tracking-widest text-stone-100 font-light lowercase">barbara hotel</h1>
+                            <h1 class="font-serif-luxury text-3xl tracking-widest text-stone-900 font-light lowercase">barbara hotel</h1>
                             <p class="text-xs text-stone-500 mt-2 tracking-wider uppercase">Check-in required</p>
                         </div>
-                        <div class="bg-[#121214] border border-stone-800/60 rounded-xl p-8 space-y-5">
+                        <div class="bg-white border border-stone-200 rounded-xl p-8 space-y-5 shadow-md">
                             <div class="text-center space-y-1">
-                                <p class="text-stone-400 text-sm">객실 입장</p>
-                                <p class="font-mono text-stone-600 text-xs">room-${roomId}</p>
+                                <p class="text-stone-700 text-sm">객실 입장</p>
+                                <p class="font-mono text-stone-500 text-xs">room-${roomId}</p>
                             </div>
                             <div class="space-y-2">
-                                <label class="text-xs uppercase tracking-wider text-stone-500">닉네임</label>
+                                <label class="text-xs uppercase tracking-wider text-stone-600">닉네임</label>
                                 <input id="nick-input" type="text" maxlength="12" placeholder="대화에서 표시될 이름"
-                                       class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
+                                       class="w-full bg-stone-50 border border-stone-300 rounded-lg px-4 py-3 text-sm text-stone-900 focus:outline-none focus:border-stone-500 transition-colors placeholder:text-stone-400">
                             </div>
                             <div class="space-y-2">
-                                <label class="text-xs uppercase tracking-wider text-stone-500">비밀번호</label>
+                                <label class="text-xs uppercase tracking-wider text-stone-600">비밀번호</label>
                                 <input id="pw-input" type="password" maxlength="4" placeholder="••••"
-                                       class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 text-center tracking-[0.5em] focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
+                                       class="w-full bg-stone-50 border border-stone-300 rounded-lg px-4 py-3 text-sm text-stone-900 text-center tracking-[0.5em] focus:outline-none focus:border-stone-500 transition-colors placeholder:text-stone-400">
                             </div>
-                            <button id="enter-btn" class="w-full bg-stone-200 hover:bg-white text-black font-medium text-sm py-3.5 rounded-lg transition-all">
+                            <button id="enter-btn" class="w-full bg-stone-900 hover:bg-black text-white font-medium text-sm py-3.5 rounded-lg transition-all">
                                 입장하기
                             </button>
-                            <p id="pw-msg" class="text-center text-xs text-red-400 min-h-[1rem]"></p>
+                            <p id="pw-msg" class="text-center text-xs text-red-500 min-h-[1rem]"></p>
                         </div>
                     </div>
                 </div>
@@ -424,6 +425,18 @@
                     return;
                 }
                 if (pw !== room.password) { msg.textContent = '비밀번호가 맞지 않습니다.'; return; }
+
+                // 닉네임 중복 확인
+                const msgsSnap = await get(ref(db, `rooms/${roomId}/nicknames`));
+                if (msgsSnap.exists()) {
+                    const takenNicks = Object.values(msgsSnap.val());
+                    if (takenNicks.includes(nick)) {
+                        msg.textContent = '이미 사용 중인 닉네임입니다. 다른 이름을 입력해주세요.';
+                        return;
+                    }
+                }
+                // 닉네임 등록
+                await push(ref(db, `rooms/${roomId}/nicknames`), nick);
 
                 sessionStorage.setItem(`barbara_nick_${roomId}`, nick);
                 sessionStorage.setItem(`barbara_auth_${roomId}`, '1');
@@ -454,30 +467,30 @@
             const nickname = getNickname(roomId);
 
             document.getElementById('app').innerHTML = `
-                <div style="height:100dvh" class="flex flex-col">
-                    <div class="border-b border-stone-800/60 px-4 py-3 flex items-center justify-between bg-[#0B0B0C] shrink-0">
+                <div style="height:100dvh" class="flex flex-col bg-white">
+                    <div class="border-b border-stone-200 px-4 py-3 flex items-center justify-between bg-white shrink-0">
                         <div class="min-w-0">
-                            <h1 class="font-serif-luxury text-lg tracking-widest text-stone-100 font-light lowercase">barbara hotel</h1>
-                            <p class="text-xs text-stone-600 truncate">${room.topic}</p>
+                            <h1 class="font-serif-luxury text-lg tracking-widest text-stone-900 font-light lowercase">barbara hotel</h1>
+                            <p class="text-xs text-stone-500 truncate">${room.topic}</p>
                         </div>
                         <div class="text-right shrink-0 ml-4">
-                            <p class="text-[10px] text-stone-600 font-mono">room-${roomId}</p>
-                            <p class="text-[10px] text-stone-700" id="remaining-label">${formatRemaining(room.expiresAt)}</p>
+                            <p class="text-[10px] text-stone-500 font-mono">room-${roomId}</p>
+                            <p class="text-[10px] text-stone-400" id="remaining-label">${formatRemaining(room.expiresAt)}</p>
                         </div>
                     </div>
 
-                    <div id="messages" class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+                    <div id="messages" class="flex-1 overflow-y-auto px-4 py-4 space-y-3 bg-stone-50">
                         <div class="text-center py-4">
-                            <p class="font-serif-luxury italic text-stone-600 text-sm">"${room.topic}"</p>
-                            <p class="text-[10px] text-stone-700 mt-2">당신은 <span class="text-stone-500">${nickname}</span>으로 입장했습니다</p>
+                            <p class="font-serif-luxury italic text-stone-400 text-sm">"${room.topic}"</p>
+                            <p class="text-[10px] text-stone-400 mt-2">당신은 <span class="text-stone-600 font-medium">${nickname}</span>으로 입장했습니다</p>
                         </div>
                     </div>
 
-                    <div class="border-t border-stone-800/60 px-4 py-3 bg-[#0B0B0C] shrink-0">
+                    <div class="border-t border-stone-200 px-4 py-3 bg-white shrink-0">
                         <div class="flex gap-2 max-w-2xl mx-auto">
                             <input id="msg-input" type="text" placeholder="메시지를 입력하세요..."
-                                   class="flex-1 bg-[#18181B] border border-stone-800 rounded-lg px-4 py-2.5 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
-                            <button id="send-btn" class="bg-stone-200 hover:bg-white text-black text-sm font-medium px-4 py-2.5 rounded-lg transition-all shrink-0">전송</button>
+                                   class="flex-1 bg-stone-50 border border-stone-300 rounded-lg px-4 py-2.5 text-sm text-stone-900 focus:outline-none focus:border-stone-500 transition-colors placeholder:text-stone-400">
+                            <button id="send-btn" class="bg-stone-900 hover:bg-black text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-all shrink-0">전송</button>
                         </div>
                     </div>
                 </div>
@@ -511,11 +524,11 @@
                         div.className = `msg-bubble flex ${isMe ? 'justify-end' : 'justify-start'}`;
                         div.innerHTML = `
                             <div class="max-w-[75%] space-y-1">
-                                ${!isMe ? `<p class="text-[10px] text-stone-600 px-1">${msg.nickname}</p>` : ''}
-                                <div class="px-3 py-2 rounded-xl text-sm leading-relaxed ${isMe ? 'bg-stone-200 text-black' : 'bg-[#1C1C1F] text-stone-200 border border-stone-800/60'}">
+                                ${!isMe ? `<p class="text-[10px] text-stone-400 px-1">${msg.nickname}</p>` : ''}
+                                <div class="px-3 py-2 rounded-xl text-sm leading-relaxed ${isMe ? 'bg-stone-900 text-white' : 'bg-white text-stone-800 border border-stone-200'}">
                                     ${msg.text}
                                 </div>
-                                <p class="text-[10px] text-stone-700 px-1 ${isMe ? 'text-right' : ''}">${formatTime(msg.timestamp)}</p>
+                                <p class="text-[10px] text-stone-400 px-1 ${isMe ? 'text-right' : ''}">${formatTime(msg.timestamp)}</p>
                             </div>
                         `;
                         messagesContainer.appendChild(div);
