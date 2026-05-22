@@ -11,6 +11,11 @@
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #0B0B0C; }
         .font-serif-luxury { font-family: 'Cormorant Garamond', serif; }
+        .cal-day { width: 100%; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; border-radius: 6px; transition: all 0.15s; color: #a8a29e; }
+        .cal-day:hover:not(:disabled) { background-color: #3f3f46; color: #e7e5e4; }
+        .cal-day.cal-selected { background-color: #e7e5e4 !important; color: #000 !important; font-weight: 600; }
+        .cal-day.cal-today { border: 1px solid #78716c; }
+        .cal-day:disabled { color: #292524; cursor: not-allowed; }
     </style>
 </head>
 <body class="text-stone-300">
@@ -62,6 +67,18 @@
             return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
         }
 
+        function formatRemaining(expiresAt) {
+            const diff = expiresAt - Date.now();
+            if (diff <= 0) return '만료됨';
+            const totalMins = Math.floor(diff / 60000);
+            const days = Math.floor(totalMins / 1440);
+            const hours = Math.floor((totalMins % 1440) / 60);
+            const mins = totalMins % 60;
+            if (days > 0) return `${days}일 ${hours}시간 후 소멸`;
+            if (hours > 0) return `${hours}시간 ${mins}분 후 소멸`;
+            return `${mins}분 후 소멸`;
+        }
+
         function showMsg(el, text, type) {
             el.textContent = text;
             el.className = `text-center text-xs mt-1 ${type === 'error' ? 'text-red-400' : 'text-emerald-400'}`;
@@ -99,14 +116,55 @@
                                            class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
                                 </div>
 
-                                <div class="space-y-2">
+                                <div class="space-y-3">
                                     <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Stay Period</label>
-                                    <div class="grid grid-cols-4 gap-2" id="period-btns">
-                                        <button data-days="1" class="period-btn bg-stone-800 text-stone-200 border border-stone-700 text-xs py-2.5 rounded-lg font-medium transition-all">1일</button>
-                                        <button data-days="3" class="period-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs py-2.5 rounded-lg transition-all hover:bg-stone-800/50">3일</button>
-                                        <button data-days="7" class="period-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs py-2.5 rounded-lg transition-all hover:bg-stone-800/50">7일</button>
-                                        <button data-days="30" class="period-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs py-2.5 rounded-lg transition-all hover:bg-stone-800/50">30일</button>
+
+                                    <!-- 빠른 선택 -->
+                                    <div class="flex flex-wrap gap-2" id="quick-btns">
+                                        <button data-mins="1"     class="quick-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-800/50">1분</button>
+                                        <button data-mins="5"     class="quick-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-800/50">5분</button>
+                                        <button data-mins="30"    class="quick-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-800/50">30분</button>
+                                        <button data-mins="60"    class="quick-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-800/50">1시간</button>
+                                        <button data-mins="360"   class="quick-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-800/50">6시간</button>
+                                        <button data-mins="1440"  class="quick-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-800/50">1일</button>
+                                        <button data-mins="10080" class="quick-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-800/50">1주</button>
                                     </div>
+
+                                    <!-- 캘린더 -->
+                                    <div class="bg-[#18181B] border border-stone-800 rounded-lg p-4 space-y-3">
+                                        <div class="flex items-center justify-between">
+                                            <button id="cal-prev" class="text-stone-500 hover:text-stone-300 w-7 h-7 flex items-center justify-center rounded transition-colors text-base">‹</button>
+                                            <span id="cal-title" class="text-xs text-stone-400 font-medium tracking-wider"></span>
+                                            <button id="cal-next" class="text-stone-500 hover:text-stone-300 w-7 h-7 flex items-center justify-center rounded transition-colors text-base">›</button>
+                                        </div>
+                                        <div class="grid grid-cols-7 text-center mb-1">
+                                            <span class="text-[10px] text-stone-600 py-0.5">일</span>
+                                            <span class="text-[10px] text-stone-600 py-0.5">월</span>
+                                            <span class="text-[10px] text-stone-600 py-0.5">화</span>
+                                            <span class="text-[10px] text-stone-600 py-0.5">수</span>
+                                            <span class="text-[10px] text-stone-600 py-0.5">목</span>
+                                            <span class="text-[10px] text-stone-600 py-0.5">금</span>
+                                            <span class="text-[10px] text-stone-600 py-0.5">토</span>
+                                        </div>
+                                        <div id="cal-grid" class="grid grid-cols-7 gap-0.5"></div>
+
+                                        <!-- 시간 입력 (날짜 선택 후 표시) -->
+                                        <div id="time-row" class="hidden border-t border-stone-800 pt-3">
+                                            <div class="flex items-center justify-center gap-3">
+                                                <span class="text-xs text-stone-500">체크아웃 시간</span>
+                                                <div class="flex items-center gap-1">
+                                                    <input id="time-hour" type="number" min="0" max="23"
+                                                           class="w-12 bg-[#0B0B0C] border border-stone-700 rounded px-2 py-1.5 text-sm text-stone-200 text-center focus:outline-none focus:border-stone-500 transition-colors">
+                                                    <span class="text-stone-600 font-light">:</span>
+                                                    <input id="time-minute" type="number" min="0" max="59"
+                                                           class="w-12 bg-[#0B0B0C] border border-stone-700 rounded px-2 py-1.5 text-sm text-stone-200 text-center focus:outline-none focus:border-stone-500 transition-colors">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 선택된 만료 시간 표시 -->
+                                    <div id="expiry-display" class="text-center text-xs min-h-[1.2rem]"></div>
                                 </div>
 
                                 <div class="space-y-2">
@@ -135,24 +193,151 @@
                 </div>
             `;
 
-            let selectedDays = 1;
+            const now = new Date();
+            let calYear = now.getFullYear();
+            let calMonth = now.getMonth();
+            let selYear = null, selMonth = null, selDay = null;
+            let selectedExpiry = null;
 
-            document.getElementById('period-btns').addEventListener('click', (e) => {
-                const btn = e.target.closest('.period-btn');
-                if (!btn) return;
-                selectedDays = parseInt(btn.dataset.days);
-                document.querySelectorAll('.period-btn').forEach(b => {
-                    b.className = 'period-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs py-2.5 rounded-lg transition-all hover:bg-stone-800/50';
+            function renderCalendar() {
+                const monthNames = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+                document.getElementById('cal-title').textContent = `${calYear}년 ${monthNames[calMonth]}`;
+
+                const grid = document.getElementById('cal-grid');
+                grid.innerHTML = '';
+
+                const firstDow = new Date(calYear, calMonth, 1).getDay();
+                const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+                const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+                for (let i = 0; i < firstDow; i++) {
+                    grid.appendChild(document.createElement('div'));
+                }
+
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const cellTs = new Date(calYear, calMonth, d).getTime();
+                    const btn = document.createElement('button');
+                    btn.textContent = d;
+                    btn.className = 'cal-day';
+
+                    if (cellTs < todayMidnight) {
+                        btn.disabled = true;
+                    } else {
+                        if (cellTs === todayMidnight) btn.classList.add('cal-today');
+                        if (selYear === calYear && selMonth === calMonth && selDay === d) {
+                            btn.classList.add('cal-selected');
+                        }
+                        btn.addEventListener('click', () => selectDay(calYear, calMonth, d));
+                    }
+                    grid.appendChild(btn);
+                }
+
+                const prevBtn = document.getElementById('cal-prev');
+                const isCurrentMonth = calYear === now.getFullYear() && calMonth === now.getMonth();
+                prevBtn.disabled = isCurrentMonth;
+                prevBtn.style.opacity = isCurrentMonth ? '0.25' : '1';
+            }
+
+            function selectDay(y, m, d) {
+                selYear = y; selMonth = m; selDay = d;
+
+                const def = new Date(y, m, d, now.getHours(), now.getMinutes() + 30);
+                if (def.getDate() !== d) { def.setHours(23, 59); }
+
+                document.getElementById('time-hour').value   = def.getHours().toString().padStart(2, '0');
+                document.getElementById('time-minute').value = def.getMinutes().toString().padStart(2, '0');
+                document.getElementById('time-row').classList.remove('hidden');
+
+                document.querySelectorAll('.quick-btn').forEach(b => {
+                    b.className = 'quick-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-800/50';
                 });
-                btn.className = 'period-btn bg-stone-800 text-stone-200 border border-stone-700 text-xs py-2.5 rounded-lg font-medium transition-all';
+
+                renderCalendar();
+                updateExpiry();
+            }
+
+            function updateExpiry() {
+                const display = document.getElementById('expiry-display');
+                if (selYear === null) { display.textContent = ''; selectedExpiry = null; return; }
+
+                const h = Math.min(23, Math.max(0, parseInt(document.getElementById('time-hour').value) || 0));
+                const m = Math.min(59, Math.max(0, parseInt(document.getElementById('time-minute').value) || 0));
+                const expiryTs = new Date(selYear, selMonth, selDay, h, m).getTime();
+                const diff = expiryTs - Date.now();
+
+                if (diff <= 0) {
+                    display.textContent = '현재 시간 이후로 설정해주세요.';
+                    display.className = 'text-center text-xs text-red-400 min-h-[1.2rem]';
+                    selectedExpiry = null;
+                    return;
+                }
+
+                selectedExpiry = expiryTs;
+
+                const monthNames = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+                const totalMins = Math.floor(diff / 60000);
+                const days  = Math.floor(totalMins / 1440);
+                const hours = Math.floor((totalMins % 1440) / 60);
+                const mins  = totalMins % 60;
+
+                let remaining;
+                if (days > 0)       remaining = `${days}일 ${hours}시간 후`;
+                else if (hours > 0) remaining = `${hours}시간 ${mins}분 후`;
+                else                remaining = `${mins}분 후`;
+
+                display.textContent = `${monthNames[selMonth]} ${selDay}일 ${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}까지 · ${remaining} 소멸`;
+                display.className = 'text-center text-xs text-emerald-400/70 min-h-[1.2rem]';
+            }
+
+            renderCalendar();
+
+            document.getElementById('cal-prev').addEventListener('click', () => {
+                if (calMonth === 0) { calMonth = 11; calYear--; } else calMonth--;
+                renderCalendar();
+            });
+            document.getElementById('cal-next').addEventListener('click', () => {
+                if (calMonth === 11) { calMonth = 0; calYear++; } else calMonth++;
+                renderCalendar();
+            });
+
+            document.getElementById('time-hour').addEventListener('input', updateExpiry);
+            document.getElementById('time-minute').addEventListener('input', updateExpiry);
+
+            document.getElementById('quick-btns').addEventListener('click', (e) => {
+                const btn = e.target.closest('.quick-btn');
+                if (!btn) return;
+
+                const mins = parseInt(btn.dataset.mins);
+                const expiryTs = Date.now() + mins * 60 * 1000;
+                const d = new Date(expiryTs);
+
+                selYear  = d.getFullYear();
+                selMonth = d.getMonth();
+                selDay   = d.getDate();
+                calYear  = selYear;
+                calMonth = selMonth;
+
+                document.getElementById('time-hour').value   = d.getHours().toString().padStart(2, '0');
+                document.getElementById('time-minute').value = d.getMinutes().toString().padStart(2, '0');
+                document.getElementById('time-row').classList.remove('hidden');
+
+                document.querySelectorAll('.quick-btn').forEach(b => {
+                    b.className = 'quick-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs px-3 py-1.5 rounded-lg transition-all hover:bg-stone-800/50';
+                });
+                btn.className = 'quick-btn bg-stone-800 text-stone-200 border border-stone-700 text-xs px-3 py-1.5 rounded-lg font-medium transition-all';
+
+                selectedExpiry = expiryTs;
+                renderCalendar();
+                updateExpiry();
             });
 
             document.getElementById('create-btn').addEventListener('click', async () => {
-                const topic = document.getElementById('topic').value.trim();
+                const topic    = document.getElementById('topic').value.trim();
                 const password = document.getElementById('password').value.trim();
-                const msg = document.getElementById('create-msg');
+                const msg      = document.getElementById('create-msg');
 
-                if (!topic) { showMsg(msg, '방 제목을 입력해주세요.', 'error'); return; }
+                if (!topic)           { showMsg(msg, '방 제목을 입력해주세요.', 'error'); return; }
+                if (!selectedExpiry)  { showMsg(msg, '체크아웃 일시를 선택해주세요.', 'error'); return; }
                 if (!password || password.length < 4) { showMsg(msg, '비밀번호 4자리를 입력해주세요.', 'error'); return; }
 
                 const btn = document.getElementById('create-btn');
@@ -160,9 +345,7 @@
                 btn.disabled = true;
 
                 const roomId = generateRoomId();
-                const expiresAt = Date.now() + selectedDays * 24 * 60 * 60 * 1000;
-
-                await set(ref(db, `rooms/${roomId}`), { topic, password, expiresAt, createdAt: Date.now() });
+                await set(ref(db, `rooms/${roomId}`), { topic, password, expiresAt: selectedExpiry, createdAt: Date.now() });
 
                 const roomUrl = `${window.location.origin}${window.location.pathname}#room/${roomId}`;
                 try {
@@ -211,7 +394,7 @@
             `;
 
             const enter = async () => {
-                const pw = document.getElementById('pw-input').value.trim();
+                const pw  = document.getElementById('pw-input').value.trim();
                 const msg = document.getElementById('pw-msg');
                 if (!pw) return;
 
@@ -243,8 +426,14 @@
             }
 
             const room = snap.val();
+
+            if (Date.now() > room.expiresAt) {
+                await remove(ref(db, `rooms/${roomId}`));
+                document.getElementById('app').innerHTML = `<div class="min-h-screen flex items-center justify-center text-stone-500 text-sm">이미 체크아웃된 객실입니다. 흔적은 사라졌습니다.</div>`;
+                return;
+            }
+
             const nickname = getNickname(roomId);
-            const remaining = Math.ceil((room.expiresAt - Date.now()) / (1000 * 60 * 60 * 24));
 
             document.getElementById('app').innerHTML = `
                 <div style="height:100dvh" class="flex flex-col">
@@ -255,7 +444,7 @@
                         </div>
                         <div class="text-right shrink-0 ml-4">
                             <p class="text-[10px] text-stone-600 font-mono">room-${roomId}</p>
-                            <p class="text-[10px] text-stone-700">${remaining}일 후 소멸</p>
+                            <p class="text-[10px] text-stone-700" id="remaining-label">${formatRemaining(room.expiresAt)}</p>
                         </div>
                     </div>
 
@@ -275,6 +464,18 @@
                     </div>
                 </div>
             `;
+
+            // 남은 시간 매분 갱신
+            const ticker = setInterval(() => {
+                const el = document.getElementById('remaining-label');
+                if (!el) { clearInterval(ticker); return; }
+                el.textContent = formatRemaining(room.expiresAt);
+                if (Date.now() > room.expiresAt) {
+                    clearInterval(ticker);
+                    remove(ref(db, `rooms/${roomId}`));
+                    document.getElementById('app').innerHTML = `<div class="min-h-screen flex items-center justify-center text-stone-500 text-sm">객실 체크아웃 시간이 되었습니다. 흔적은 사라졌습니다.</div>`;
+                }
+            }, 30000);
 
             const messagesContainer = document.getElementById('messages');
 
