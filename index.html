@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>barbara hotel</title>
+    <!-- Tailwind CSS & Google Fonts 연동 -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,500;1,300&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #0B0B0C; }
+        .font-serif-luxury { font-family: 'Cormorant Garamond', serif; }
+    </style>
+</head>
+<body class="text-stone-300 min-h-screen flex flex-col justify-between p-6 md:p-12 selection:bg-stone-700 selection:text-white">
+
+    <!-- TOP: 브랜드 로고 및 서브타이틀 -->
+    <header class="text-center md:text-left">
+        <h1 class="font-serif-luxury text-4xl md:text-5xl tracking-widest text-stone-100 font-light lowercase">barbara hotel</h1>
+        <p class="text-xs tracking-widest text-stone-500 uppercase mt-2 font-light">personal data 0% • transient room</p>
+    </header>
+
+    <!-- CENTER: 메인 컨셉 및 방 생성 폼 -->
+    <main class="max-w-xl w-full mx-auto my-auto py-12">
+        <div class="space-y-8">
+            <!-- 안내 문구 -->
+            <div class="text-center space-y-2">
+                <p class="font-serif-luxury italic text-2xl text-stone-400">"Leave your traces, completely erased later."</p>
+                <p class="text-xs text-stone-500 font-light">카톡 사찰을 피해, 흔적 없이 증발할 우리들만의 비밀 객실을 개설하세요.</p>
+            </div>
+
+            <!-- 핵심 입력 폼 -->
+            <div class="bg-[#121214] border border-stone-800/60 rounded-xl p-6 md:p-8 space-y-6 shadow-2xl">
+                <!-- 1. 방 제목 / 하고 싶은 말 -->
+                <div class="space-y-2">
+                    <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Room Topic (방 제목 / 첫 마디)</label>
+                    <input type="text" placeholder="오늘 밤 뒷담화는 여기서. 비밀번호 아는 사람만 들어와." 
+                           class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
+                </div>
+
+                <!-- 2. 투숙 기간 선택 (휘발성 옵션) -->
+                <div class="space-y-2">
+                    <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Stay Period (투숙 기간)</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button class="bg-stone-800 text-stone-200 border border-stone-700 text-xs py-2.5 rounded-lg font-medium transition-all hover:bg-stone-700">1일</button>
+                        <button class="bg-[#18181B] text-stone-500 border border-stone-800 text-xs py-2.5 rounded-lg transition-all hover:bg-stone-800/50">3일</button>
+                        <button class="bg-[#18181B] text-stone-500 border border-stone-800 text-xs py-2.5 rounded-lg transition-all hover:bg-stone-800/50">7일</button>
+                        <button class="bg-[#18181B] text-stone-500 border border-stone-800 text-xs py-2.5 rounded-lg transition-all hover:bg-stone-800/50">30일</button>
+                    </div>
+                </div>
+
+                <!-- 3. 체크인 패스워드 설정 -->
+                <div class="space-y-2">
+                    <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Room Password (객실 비밀번호)</label>
+                    <input type="password" placeholder="참여자들이 입력할 마스터 키 숫자 4자리" 
+                           class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
+                </div>
+
+                <!-- 실시간 생성될 URL 미리보기 (UI적 신뢰감 부여) -->
+                <div class="pt-2 text-center">
+                    <p class="text-xs text-stone-600">생성될 주소: <span class="text-stone-400 font-mono">barbarahotel.com/room-702</span></p>
+                </div>
+
+                <!-- 버튼 -->
+                <button class="w-full bg-stone-200 hover:bg-white text-black font-medium text-sm py-3.5 rounded-lg transition-all shadow-lg active:scale-[0.99]">
+                    객실 생성 및 링크 복사하기 (Check-in)
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- BOTTOM: 룸서비스 광고 영역 가이드 및 푸터 -->
+    <footer class="w-full max-w-xl mx-auto space-y-6 text-center">
+        <!-- 텔레그램 식 짜치지 않는 한 줄 텍스트 광고 미리보기 UI -->
+        <div class="border-t border-dashed border-stone-800/80 pt-4">
+            <div class="inline-flex items-center gap-2 bg-[#121214] border border-stone-800/40 px-4 py-1.5 rounded-full text-xs">
+                <span class="text-[10px] uppercase bg-stone-800 px-1.5 py-0.5 rounded text-stone-400 font-mono font-bold tracking-wider">Room Service</span>
+                <a href="#" class="text-stone-400 hover:underline font-light">"오늘 밤 대화에 어울리는 위스키 바 추천 (by 성수동 어메니티)"</a>
+            </div>
+        </div>
+        <p class="text-[10px] text-stone-600 font-light tracking-widest uppercase">© 2026 barbara hotel. No logs. No trace. Only Conversation.</p>
+    </footer>
+
+</body>
+</html>
