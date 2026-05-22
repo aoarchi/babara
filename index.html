@@ -13,18 +13,21 @@
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #0B0B0C; }
         .font-serif-luxury { font-family: 'Cormorant Garamond', serif; }
         .hidden-view { display: none !important; }
+        /* 스크롤바 숨기기 (미니멀리즘 유지) */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="text-stone-300 min-h-screen flex flex-col justify-between p-6 md:p-12 selection:bg-stone-700 selection:text-white">
+<body class="text-stone-300 min-h-screen flex flex-col justify-between p-4 md:p-12 selection:bg-stone-700 selection:text-white">
 
-    <!-- TOP: 브랜드 로고 및 서브타이틀 -->
-    <header class="text-center md:text-left">
+    <!-- TOP: 브랜드 로고 및 서브타이틀 (고정 헤더) -->
+    <header class="text-center md:text-left shrink-0">
         <h1 class="font-serif-luxury text-4xl md:text-5xl tracking-widest text-stone-100 font-light lowercase">barbara hotel</h1>
         <p class="text-xs tracking-widest text-stone-500 uppercase mt-2 font-light">personal data 0% • transient room</p>
     </header>
 
     <!-- ================= [VIEW 1: 메인 로비 화면] ================= -->
-    <main id="lobbyView" class="max-w-xl w-full mx-auto my-auto py-12">
+    <main id="lobbyView" class="max-w-xl w-full mx-auto my-auto py-8">
         <div class="space-y-8">
             <div class="text-center space-y-2">
                 <p class="font-serif-luxury italic text-2xl text-stone-400">"Leave your traces, completely erased later."</p>
@@ -41,10 +44,10 @@
                 <div class="space-y-2">
                     <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Stay Period (투숙 기간)</label>
                     <div class="grid grid-cols-4 gap-2">
-                        <button class="bg-stone-800 text-stone-200 border border-stone-700 text-xs py-2.5 rounded-lg font-medium transition-all hover:bg-stone-700">1일</button>
-                        <button class="bg-[#18181B] text-stone-500 border border-stone-800 text-xs py-2.5 rounded-lg transition-all hover:bg-stone-800/50">3일</button>
-                        <button class="bg-[#18181B] text-stone-500 border border-stone-800 text-xs py-2.5 rounded-lg transition-all hover:bg-stone-800/50">7일</button>
-                        <button class="bg-[#18181B] text-stone-500 border border-stone-800 text-xs py-2.5 rounded-lg transition-all hover:bg-stone-800/50">30일</button>
+                        <button class="bg-stone-800 text-stone-200 border border-stone-700 text-xs py-2.5 rounded-lg font-medium transition-all">1일</button>
+                        <button class="bg-[#18181B] text-stone-500 border border-stone-800 text-xs py-2.5 rounded-lg">3일</button>
+                        <button class="bg-[#18181B] text-stone-500 border border-stone-800 text-xs py-2.5 rounded-lg">7일</button>
+                        <button class="bg-[#18181B] text-stone-500 border border-stone-800 text-xs py-2.5 rounded-lg">30일</button>
                     </div>
                 </div>
 
@@ -58,7 +61,6 @@
                     <p class="text-xs text-stone-600">생성될 주소: <span class="text-stone-400 font-mono">barbarahotel.com/room-702</span></p>
                 </div>
 
-                <!-- 버튼을 누르면 다음 화면(Check-in)으로 전환되도록 고쳤습니다 -->
                 <button onclick="goToCheckIn()" class="w-full bg-stone-200 hover:bg-white text-black font-medium text-sm py-3.5 rounded-lg transition-all shadow-lg active:scale-[0.99]">
                     객실 생성 및 링크 복사하기 (Check-in)
                 </button>
@@ -67,7 +69,7 @@
     </main>
 
     <!-- ================= [VIEW 2: 객실 입장 / 체크인 화면] ================= -->
-    <main id="checkInView" class="max-w-xl w-full mx-auto my-auto py-12 hidden-view">
+    <main id="checkInView" class="max-w-xl w-full mx-auto my-auto py-8 hidden-view">
         <div class="space-y-8">
             <div class="text-center space-y-2">
                 <span class="text-[10px] uppercase border border-stone-700 px-2 py-0.5 rounded text-stone-500 font-mono tracking-widest">Room #702</span>
@@ -76,23 +78,20 @@
             </div>
 
             <div class="bg-[#121214] border border-stone-800/60 rounded-xl p-6 md:p-8 space-y-6 shadow-2xl">
-                <!-- 1. 마스터 키 입력 -->
                 <div class="space-y-2">
                     <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Master Key (비밀번호 확인)</label>
                     <input type="password" placeholder="숫자 4자리를 입력하세요" 
                            class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
                 </div>
 
-                <!-- 2. 임시 식별자 입력 (가입 절차 없음) -->
                 <div class="space-y-2">
                     <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Temporary Nickname (임시 닉네임)</label>
                     <input type="text" placeholder="방 안에서 사용할 이름 (예: 길동, 대리님)" 
                            class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
-                    <p class="text-[11px] text-stone-600">※ 이 닉네임 역시 방이 폭파되면 서버에서 흔적 없이 영구 삭제됩니다.</p>
                 </div>
 
-                <!-- 입장 버튼 (누르면 나중에 대화방으로) -->
-                <button onclick="alert('성공! 다음 단계인 [실시간 대화방 UI]도 곧 대령하겠습니다.')" class="w-full bg-stone-200 hover:bg-white text-black font-medium text-sm py-3.5 rounded-lg transition-all shadow-lg active:scale-[0.99]">
+                <!-- 팝업창 대신 3단계 대화방 화면으로 진입하게 교체했습니다 -->
+                <button onclick="goToChat()" class="w-full bg-stone-200 hover:bg-white text-black font-medium text-sm py-3.5 rounded-lg transition-all shadow-lg active:scale-[0.99]">
                     객실 입장하기 (Enter Room)
                 </button>
                 
@@ -103,18 +102,76 @@
         </div>
     </main>
 
-    <!-- BOTTOM: 룸서비스 광고 영역 가이드 및 푸터 -->
-    <footer class="w-full max-w-xl mx-auto space-y-6 text-center">
-        <div class="border-t border-dashed border-stone-800/80 pt-4">
-            <div class="inline-flex items-center gap-2 bg-[#121214] border border-stone-800/40 px-4 py-1.5 rounded-full text-xs">
-                <span class="text-[10px] uppercase bg-stone-800 px-1.5 py-0.5 rounded text-stone-400 font-mono font-bold tracking-wider">Room Service</span>
-                <a href="#" class="text-stone-400 hover:underline font-light">"오늘 밤 대화에 어울리는 위스키 바 추천 (by 성수동 어메니티)"</a>
+    <!-- ================= [VIEW 3: 실제 실시간 대화방 내부 UI] ================= -->
+    <main id="chatView" class="max-w-xl w-full mx-auto flex flex-col h-[65vh] bg-[#121214] border border-stone-800/60 rounded-xl shadow-2xl overflow-hidden hidden-view my-auto">
+        <!-- 대화방 상단 바 (타이머 & 객실 정보) -->
+        <div class="bg-[#18181B] border-b border-stone-800/80 px-4 py-3 flex justify-between items-center shrink-0">
+            <div>
+                <h3 class="text-xs font-medium text-stone-200 font-mono tracking-wide">ROOM #702</h3>
+                <p class="text-[10px] text-stone-500">Topic: 오늘 밤 뒷담화는 여기서...</p>
+            </div>
+            <!-- 폭파 카운트다운 타이머 -->
+            <div class="text-right">
+                <span class="text-[10px] uppercase text-stone-500 font-mono block">Time Left Before Wipe</span>
+                <span id="countdownTimer" class="text-xs font-mono text-amber-500/90 font-bold">23:59:59</span>
             </div>
         </div>
+
+        <!-- 실시간 말풍선 영역 (가상 대화 데이터 탑재) -->
+        <div class="flex-1 p-4 overflow-y-auto space-y-4 no-scrollbar text-sm">
+            <!-- 유저 1 -->
+            <div class="space-y-1">
+                <span class="text-[11px] font-mono text-stone-500">익명_김대리</span>
+                <div class="bg-[#18181B] border border-stone-800/80 px-3 py-2 rounded-lg text-stone-300 max-w-[85%] inline-block">
+                    진짜 오늘 부장님 때문에 빡쳐서 카톡방에서 말도 못 하고 여기 팠음 ㅡㅡ 사찰당할까봐 무서워서 원
+                </div>
+            </div>
+
+            <!-- 유저 2 -->
+            <div class="space-y-1 text-right">
+                <span class="text-[11px] font-mono text-stone-500">익명_이과장</span>
+                <div class="bg-stone-800 border border-stone-700/50 px-3 py-2 rounded-lg text-stone-100 max-w-[85%] inline-block text-left">
+                    ㄹㅇㅋㅋ 거긴 눈이 너무 많음. 근데 여기 주소 나가면 대화 진짜 싹 다 날아가는 거 맞지? 개꿀이네
+                </div>
+            </div>
+
+            <!-- ★ 대표님의 천재적 아이디어: AI 룸서비스(컨시어지)의 중간 개입 광고 UI ★ -->
+            <div class="flex flex-col items-center py-4 my-2 border-y border-dashed border-stone-800/40 bg-[#0B0B0C]/40 px-3 rounded-lg space-y-1">
+                <div class="flex items-center gap-1.5">
+                    <span class="text-[9px] uppercase bg-amber-950/40 border border-amber-900/60 px-1.5 py-0.2 rounded text-amber-500 font-mono font-bold tracking-wider">Room Service AI</span>
+                    <span class="text-[11px] font-medium text-stone-400">바바라 집사</span>
+                </div>
+                <p class="text-xs text-stone-400 font-light text-center">
+                    "투숙객님들, 슬슬 배꼽시계가 울리는 룸서비스 시간입니다. 🤫 스트레스엔 매콤한 떡볶이 어떠세요? 마침 '동대문 엽기떡볶이 2,000원 할인권'이 로비에 도착했습니다."
+                </p>
+                <a href="#" class="text-[10px] text-amber-500/80 hover:underline pt-1 font-mono">➔ [어메니티 쿠폰 받기]</a>
+            </div>
+
+            <!-- 유저 1의 반응 -->
+            <div class="space-y-1">
+                <span class="text-[11px] font-mono text-stone-500">익명_김대리</span>
+                <div class="bg-[#18181B] border border-stone-800/80 px-3 py-2 rounded-lg text-stone-300 max-w-[85%] inline-block">
+                    헐 타이밍 보소 ㅋㅋㅋ 마침 엽떡 땡겼는데 정산하기로 시켜 먹어야겠다
+                </div>
+            </div>
+        </div>
+
+        <!-- 하단 메시지 입력창 영역 -->
+        <div class="p-3 bg-[#18181B] border-t border-stone-800/80 shrink-0 flex gap-2 items-center">
+            <input type="text" placeholder="흔적을 남기지 않을 대화를 입력하세요..." 
+                   class="flex-1 bg-[#121214] border border-stone-800 rounded-lg px-4 py-2.5 text-xs text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
+            <button class="bg-stone-300 hover:bg-white text-black text-xs font-medium px-4 py-2.5 rounded-lg transition-all shrink-0">
+                전송
+            </button>
+        </div>
+    </main>
+
+    <!-- BOTTOM: 고정 푸터 -->
+    <footer class="w-full max-w-xl mx-auto text-center shrink-0 pt-6">
         <p class="text-[10px] text-stone-600 font-light tracking-widest uppercase">© 2026 barbara hotel. No logs. No trace. Only Conversation.</p>
     </footer>
 
-    <!-- 화면 전환용 프론트엔드 간단 스크립트 -->
+    <!-- 화면 전환 및 타이머 스크립트 -->
     <script>
         function goToCheckIn() {
             document.getElementById('lobbyView').classList.add('hidden-view');
@@ -122,7 +179,31 @@
         }
         function goToLobby() {
             document.getElementById('checkInView').classList.add('hidden-view');
+            document.getElementById('chatView').classList.add('hidden-view');
             document.getElementById('lobbyView').classList.remove('hidden-view');
+        }
+        function goToChat() {
+            document.getElementById('checkInView').classList.add('hidden-view');
+            document.getElementById('chatView').classList.remove('hidden-view');
+            startTimer();
+        }
+
+        // 실제 째깍거리는 가짜 타이머 로직 (디테일)
+        function startTimer() {
+            let totalSeconds = 24 * 60 * 60 - 1; 
+            const timerElement = document.getElementById('countdownTimer');
+            
+            setInterval(() => {
+                if (totalSeconds <= 0) return;
+                totalSeconds--;
+                
+                let hrs = Math.floor(totalSeconds / 3600);
+                let mins = Math.floor((totalSeconds % 3600) / 60);
+                let secs = totalSeconds % 60;
+                
+                timerElement.innerText = 
+                    `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }, 1000);
         }
     </script>
 
