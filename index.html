@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>barbara hotel</title>
-    <!-- Tailwind CSS & Google Fonts 연동 -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,200 +11,315 @@
     <style>
         body { font-family: 'Noto Sans KR', sans-serif; background-color: #0B0B0C; }
         .font-serif-luxury { font-family: 'Cormorant Garamond', serif; }
-        .hidden-view { display: none !important; }
-        /* 스크롤바 숨기기 (미니멀리즘 유지) */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="text-stone-300 min-h-screen flex flex-col justify-between p-4 md:p-12 selection:bg-stone-700 selection:text-white">
+<body class="text-stone-300">
+    <div id="app"></div>
 
-    <!-- TOP: 브랜드 로고 및 서브타이틀 (고정 헤더) -->
-    <header class="text-center md:text-left shrink-0">
-        <h1 class="font-serif-luxury text-4xl md:text-5xl tracking-widest text-stone-100 font-light lowercase">barbara hotel</h1>
-        <p class="text-xs tracking-widest text-stone-500 uppercase mt-2 font-light">personal data 0% • transient room</p>
-    </header>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+        import { getDatabase, ref, set, get, push, onValue, remove } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-database.js";
 
-    <!-- ================= [VIEW 1: 메인 로비 화면] ================= -->
-    <main id="lobbyView" class="max-w-xl w-full mx-auto my-auto py-8">
-        <div class="space-y-8">
-            <div class="text-center space-y-2">
-                <p class="font-serif-luxury italic text-2xl text-stone-400">"Leave your traces, completely erased later."</p>
-                <p class="text-xs text-stone-500 font-light">카톡 사찰을 피해, 흔적 없이 증발할 우리들만의 비밀 객실을 개설하세요.</p>
-            </div>
+        const firebaseConfig = {
+            apiKey: "AIzaSyADLRPkW3ZO_LyBJFreP2X6b7kSuQ-TXK8",
+            authDomain: "barbara-hotel.firebaseapp.com",
+            databaseURL: "https://barbara-hotel-default-rtdb.firebaseio.com",
+            projectId: "barbara-hotel",
+            storageBucket: "barbara-hotel.firebasestorage.app",
+            messagingSenderId: "590366200762",
+            appId: "1:590366200762:web:82833e1938a9cd8eed8383"
+        };
 
-            <div class="bg-[#121214] border border-stone-800/60 rounded-xl p-6 md:p-8 space-y-6 shadow-2xl">
-                <div class="space-y-2">
-                    <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Room Topic (방 제목 / 첫 마디)</label>
-                    <input type="text" placeholder="오늘 밤 뒷담화는 여기서. 비밀번호 아는 사람만 들어와." 
-                           class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        function generateRoomId() {
+            const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < 6; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
+            return result;
+        }
+
+        function generateNickname() {
+            const adj = ['조용한', '신비로운', '익명의', '밤의', '숨은', '비밀의', '낯선'];
+            const noun = ['투숙객', '방문자', '손님', '여행자', '탐험가'];
+            return adj[Math.floor(Math.random() * adj.length)] + ' ' + noun[Math.floor(Math.random() * noun.length)];
+        }
+
+        function getNickname(roomId) {
+            const key = `barbara_nick_${roomId}`;
+            let nick = sessionStorage.getItem(key);
+            if (!nick) {
+                nick = generateNickname();
+                sessionStorage.setItem(key, nick);
+            }
+            return nick;
+        }
+
+        function formatTime(ts) {
+            if (!ts) return '';
+            const d = new Date(ts);
+            return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+        }
+
+        function showMsg(el, text, type) {
+            el.textContent = text;
+            el.className = `text-center text-xs mt-1 ${type === 'error' ? 'text-red-400' : 'text-emerald-400'}`;
+        }
+
+        function route() {
+            const hash = window.location.hash;
+            if (hash.startsWith('#room/')) {
+                renderPasswordPage(hash.slice(6));
+            } else {
+                renderLanding();
+            }
+        }
+
+        // ── 랜딩 (방 생성) ──────────────────────────────────────────
+        function renderLanding() {
+            document.getElementById('app').innerHTML = `
+                <div class="min-h-screen flex flex-col justify-between p-6 md:p-12">
+                    <header class="text-center md:text-left">
+                        <h1 class="font-serif-luxury text-4xl md:text-5xl tracking-widest text-stone-100 font-light lowercase">barbara hotel</h1>
+                        <p class="text-xs tracking-widest text-stone-500 uppercase mt-2 font-light">personal data 0% • transient room</p>
+                    </header>
+
+                    <main class="max-w-xl w-full mx-auto my-auto py-12">
+                        <div class="space-y-8">
+                            <div class="text-center space-y-2">
+                                <p class="font-serif-luxury italic text-2xl text-stone-400">"Leave your traces, completely erased later."</p>
+                                <p class="text-xs text-stone-500 font-light">카톡 사찰을 피해, 흔적 없이 증발할 우리들만의 비밀 객실을 개설하세요.</p>
+                            </div>
+
+                            <div class="bg-[#121214] border border-stone-800/60 rounded-xl p-6 md:p-8 space-y-6 shadow-2xl">
+                                <div class="space-y-2">
+                                    <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Room Topic</label>
+                                    <input id="topic" type="text" placeholder="오늘 밤 뒷담화는 여기서. 비밀번호 아는 사람만 들어와."
+                                           class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
+                                </div>
+
+                                <div class="space-y-2">
+                                    <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Stay Period</label>
+                                    <div class="grid grid-cols-4 gap-2" id="period-btns">
+                                        <button data-days="1" class="period-btn bg-stone-800 text-stone-200 border border-stone-700 text-xs py-2.5 rounded-lg font-medium transition-all">1일</button>
+                                        <button data-days="3" class="period-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs py-2.5 rounded-lg transition-all hover:bg-stone-800/50">3일</button>
+                                        <button data-days="7" class="period-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs py-2.5 rounded-lg transition-all hover:bg-stone-800/50">7일</button>
+                                        <button data-days="30" class="period-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs py-2.5 rounded-lg transition-all hover:bg-stone-800/50">30일</button>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Room Password</label>
+                                    <input id="password" type="password" maxlength="4" placeholder="참여자들이 입력할 마스터 키 숫자 4자리"
+                                           class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
+                                </div>
+
+                                <button id="create-btn" class="w-full bg-stone-200 hover:bg-white text-black font-medium text-sm py-3.5 rounded-lg transition-all shadow-lg active:scale-[0.99]">
+                                    객실 생성 및 링크 복사하기 (Check-in)
+                                </button>
+                                <p id="create-msg" class="text-center text-xs text-stone-500"></p>
+                            </div>
+                        </div>
+                    </main>
+
+                    <footer class="w-full max-w-xl mx-auto space-y-6 text-center">
+                        <div class="border-t border-dashed border-stone-800/80 pt-4">
+                            <div class="inline-flex items-center gap-2 bg-[#121214] border border-stone-800/40 px-4 py-1.5 rounded-full text-xs">
+                                <span class="text-[10px] uppercase bg-stone-800 px-1.5 py-0.5 rounded text-stone-400 font-mono font-bold tracking-wider">Room Service</span>
+                                <a href="#" class="text-stone-400 hover:underline font-light">"오늘 밤 대화에 어울리는 위스키 바 추천 (by 성수동 어메니티)"</a>
+                            </div>
+                        </div>
+                        <p class="text-[10px] text-stone-600 font-light tracking-widest uppercase">© 2026 barbara hotel. No logs. No trace. Only Conversation.</p>
+                    </footer>
                 </div>
+            `;
 
-                <div class="space-y-2">
-                    <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Stay Period (투숙 기간)</label>
-                    <div class="grid grid-cols-4 gap-2">
-                        <button class="bg-stone-800 text-stone-200 border border-stone-700 text-xs py-2.5 rounded-lg font-medium transition-all">1일</button>
-                        <button class="bg-[#18181B] text-stone-500 border border-stone-800 text-xs py-2.5 rounded-lg">3일</button>
-                        <button class="bg-[#18181B] text-stone-500 border border-stone-800 text-xs py-2.5 rounded-lg">7일</button>
-                        <button class="bg-[#18181B] text-stone-500 border border-stone-800 text-xs py-2.5 rounded-lg">30일</button>
+            let selectedDays = 1;
+
+            document.getElementById('period-btns').addEventListener('click', (e) => {
+                const btn = e.target.closest('.period-btn');
+                if (!btn) return;
+                selectedDays = parseInt(btn.dataset.days);
+                document.querySelectorAll('.period-btn').forEach(b => {
+                    b.className = 'period-btn bg-[#18181B] text-stone-500 border border-stone-800 text-xs py-2.5 rounded-lg transition-all hover:bg-stone-800/50';
+                });
+                btn.className = 'period-btn bg-stone-800 text-stone-200 border border-stone-700 text-xs py-2.5 rounded-lg font-medium transition-all';
+            });
+
+            document.getElementById('create-btn').addEventListener('click', async () => {
+                const topic = document.getElementById('topic').value.trim();
+                const password = document.getElementById('password').value.trim();
+                const msg = document.getElementById('create-msg');
+
+                if (!topic) { showMsg(msg, '방 제목을 입력해주세요.', 'error'); return; }
+                if (!password || password.length < 4) { showMsg(msg, '비밀번호 4자리를 입력해주세요.', 'error'); return; }
+
+                const btn = document.getElementById('create-btn');
+                btn.textContent = '생성 중...';
+                btn.disabled = true;
+
+                const roomId = generateRoomId();
+                const expiresAt = Date.now() + selectedDays * 24 * 60 * 60 * 1000;
+
+                await set(ref(db, `rooms/${roomId}`), { topic, password, expiresAt, createdAt: Date.now() });
+
+                const roomUrl = `${window.location.origin}${window.location.pathname}#room/${roomId}`;
+                try {
+                    await navigator.clipboard.writeText(roomUrl);
+                    showMsg(msg, '링크가 복사되었습니다! 친구에게 보내세요.', 'success');
+                } catch {
+                    showMsg(msg, `링크: ${roomUrl}`, 'success');
+                }
+
+                sessionStorage.setItem(`barbara_auth_${roomId}`, '1');
+                setTimeout(() => { window.location.hash = `room/${roomId}`; }, 1200);
+            });
+        }
+
+        // ── 비밀번호 입력 ────────────────────────────────────────────
+        function renderPasswordPage(roomId) {
+            if (sessionStorage.getItem(`barbara_auth_${roomId}`)) {
+                renderChatRoom(roomId);
+                return;
+            }
+
+            document.getElementById('app').innerHTML = `
+                <div class="min-h-screen flex flex-col items-center justify-center p-6">
+                    <div class="w-full max-w-sm space-y-8">
+                        <div class="text-center">
+                            <h1 class="font-serif-luxury text-3xl tracking-widest text-stone-100 font-light lowercase">barbara hotel</h1>
+                            <p class="text-xs text-stone-500 mt-2 tracking-wider uppercase">Check-in required</p>
+                        </div>
+                        <div class="bg-[#121214] border border-stone-800/60 rounded-xl p-8 space-y-6">
+                            <div class="text-center space-y-1">
+                                <p class="text-stone-400 text-sm">객실 입장</p>
+                                <p class="font-mono text-stone-600 text-xs">room-${roomId}</p>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-xs uppercase tracking-wider text-stone-500">비밀번호</label>
+                                <input id="pw-input" type="password" maxlength="4" placeholder="••••"
+                                       class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 text-center tracking-[0.5em] focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
+                            </div>
+                            <button id="enter-btn" class="w-full bg-stone-200 hover:bg-white text-black font-medium text-sm py-3.5 rounded-lg transition-all">
+                                입장하기
+                            </button>
+                            <p id="pw-msg" class="text-center text-xs text-red-400 min-h-[1rem]"></p>
+                        </div>
                     </div>
                 </div>
+            `;
 
-                <div class="space-y-2">
-                    <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Room Password (객실 비밀번호)</label>
-                    <input type="password" placeholder="참여자들이 입력할 마스터 키 숫자 4자리" 
-                           class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
-                </div>
+            const enter = async () => {
+                const pw = document.getElementById('pw-input').value.trim();
+                const msg = document.getElementById('pw-msg');
+                if (!pw) return;
 
-                <div class="pt-2 text-center">
-                    <p class="text-xs text-stone-600">생성될 주소: <span class="text-stone-400 font-mono">barbarahotel.com/room-702</span></p>
-                </div>
+                const snap = await get(ref(db, `rooms/${roomId}`));
+                if (!snap.exists()) { msg.textContent = '존재하지 않는 객실입니다.'; return; }
 
-                <button onclick="goToCheckIn()" class="w-full bg-stone-200 hover:bg-white text-black font-medium text-sm py-3.5 rounded-lg transition-all shadow-lg active:scale-[0.99]">
-                    객실 생성 및 링크 복사하기 (Check-in)
-                </button>
-            </div>
-        </div>
-    </main>
+                const room = snap.val();
+                if (Date.now() > room.expiresAt) {
+                    await remove(ref(db, `rooms/${roomId}`));
+                    msg.textContent = '이미 체크아웃된 객실입니다. 흔적은 사라졌습니다.';
+                    return;
+                }
+                if (pw !== room.password) { msg.textContent = '비밀번호가 맞지 않습니다.'; return; }
 
-    <!-- ================= [VIEW 2: 객실 입장 / 체크인 화면] ================= -->
-    <main id="checkInView" class="max-w-xl w-full mx-auto my-auto py-8 hidden-view">
-        <div class="space-y-8">
-            <div class="text-center space-y-2">
-                <span class="text-[10px] uppercase border border-stone-700 px-2 py-0.5 rounded text-stone-500 font-mono tracking-widest">Room #702</span>
-                <p class="font-serif-luxury italic text-2xl text-stone-400 mt-2">"Enter the master key to step inside."</p>
-                <p class="text-xs text-stone-500 font-light">초대받은 객실에 입장하기 위해 비밀번호와 임시 닉네임을 입력하세요.</p>
-            </div>
+                sessionStorage.setItem(`barbara_auth_${roomId}`, '1');
+                renderChatRoom(roomId);
+            };
 
-            <div class="bg-[#121214] border border-stone-800/60 rounded-xl p-6 md:p-8 space-y-6 shadow-2xl">
-                <div class="space-y-2">
-                    <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Master Key (비밀번호 확인)</label>
-                    <input type="password" placeholder="숫자 4자리를 입력하세요" 
-                           class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
-                </div>
-
-                <div class="space-y-2">
-                    <label class="text-xs uppercase tracking-wider text-stone-500 font-medium">Temporary Nickname (임시 닉네임)</label>
-                    <input type="text" placeholder="방 안에서 사용할 이름 (예: 길동, 대리님)" 
-                           class="w-full bg-[#18181B] border border-stone-800 rounded-lg px-4 py-3 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
-                </div>
-
-                <!-- 팝업창 대신 3단계 대화방 화면으로 진입하게 교체했습니다 -->
-                <button onclick="goToChat()" class="w-full bg-stone-200 hover:bg-white text-black font-medium text-sm py-3.5 rounded-lg transition-all shadow-lg active:scale-[0.99]">
-                    객실 입장하기 (Enter Room)
-                </button>
-                
-                <button onclick="goToLobby()" class="w-full text-stone-600 hover:text-stone-400 text-xs transition-colors py-1">
-                    ← 로비로 돌아가기
-                </button>
-            </div>
-        </div>
-    </main>
-
-    <!-- ================= [VIEW 3: 실제 실시간 대화방 내부 UI] ================= -->
-    <main id="chatView" class="max-w-xl w-full mx-auto flex flex-col h-[65vh] bg-[#121214] border border-stone-800/60 rounded-xl shadow-2xl overflow-hidden hidden-view my-auto">
-        <!-- 대화방 상단 바 (타이머 & 객실 정보) -->
-        <div class="bg-[#18181B] border-b border-stone-800/80 px-4 py-3 flex justify-between items-center shrink-0">
-            <div>
-                <h3 class="text-xs font-medium text-stone-200 font-mono tracking-wide">ROOM #702</h3>
-                <p class="text-[10px] text-stone-500">Topic: 오늘 밤 뒷담화는 여기서...</p>
-            </div>
-            <!-- 폭파 카운트다운 타이머 -->
-            <div class="text-right">
-                <span class="text-[10px] uppercase text-stone-500 font-mono block">Time Left Before Wipe</span>
-                <span id="countdownTimer" class="text-xs font-mono text-amber-500/90 font-bold">23:59:59</span>
-            </div>
-        </div>
-
-        <!-- 실시간 말풍선 영역 (가상 대화 데이터 탑재) -->
-        <div class="flex-1 p-4 overflow-y-auto space-y-4 no-scrollbar text-sm">
-            <!-- 유저 1 -->
-            <div class="space-y-1">
-                <span class="text-[11px] font-mono text-stone-500">익명_김대리</span>
-                <div class="bg-[#18181B] border border-stone-800/80 px-3 py-2 rounded-lg text-stone-300 max-w-[85%] inline-block">
-                    진짜 오늘 부장님 때문에 빡쳐서 카톡방에서 말도 못 하고 여기 팠음 ㅡㅡ 사찰당할까봐 무서워서 원
-                </div>
-            </div>
-
-            <!-- 유저 2 -->
-            <div class="space-y-1 text-right">
-                <span class="text-[11px] font-mono text-stone-500">익명_이과장</span>
-                <div class="bg-stone-800 border border-stone-700/50 px-3 py-2 rounded-lg text-stone-100 max-w-[85%] inline-block text-left">
-                    ㄹㅇㅋㅋ 거긴 눈이 너무 많음. 근데 여기 주소 나가면 대화 진짜 싹 다 날아가는 거 맞지? 개꿀이네
-                </div>
-            </div>
-
-            <!-- ★ 대표님의 천재적 아이디어: AI 룸서비스(컨시어지)의 중간 개입 광고 UI ★ -->
-            <div class="flex flex-col items-center py-4 my-2 border-y border-dashed border-stone-800/40 bg-[#0B0B0C]/40 px-3 rounded-lg space-y-1">
-                <div class="flex items-center gap-1.5">
-                    <span class="text-[9px] uppercase bg-amber-950/40 border border-amber-900/60 px-1.5 py-0.2 rounded text-amber-500 font-mono font-bold tracking-wider">Room Service AI</span>
-                    <span class="text-[11px] font-medium text-stone-400">바바라 집사</span>
-                </div>
-                <p class="text-xs text-stone-400 font-light text-center">
-                    "투숙객님들, 슬슬 배꼽시계가 울리는 룸서비스 시간입니다. 🤫 스트레스엔 매콤한 떡볶이 어떠세요? 마침 '동대문 엽기떡볶이 2,000원 할인권'이 로비에 도착했습니다."
-                </p>
-                <a href="#" class="text-[10px] text-amber-500/80 hover:underline pt-1 font-mono">➔ [어메니티 쿠폰 받기]</a>
-            </div>
-
-            <!-- 유저 1의 반응 -->
-            <div class="space-y-1">
-                <span class="text-[11px] font-mono text-stone-500">익명_김대리</span>
-                <div class="bg-[#18181B] border border-stone-800/80 px-3 py-2 rounded-lg text-stone-300 max-w-[85%] inline-block">
-                    헐 타이밍 보소 ㅋㅋㅋ 마침 엽떡 땡겼는데 정산하기로 시켜 먹어야겠다
-                </div>
-            </div>
-        </div>
-
-        <!-- 하단 메시지 입력창 영역 -->
-        <div class="p-3 bg-[#18181B] border-t border-stone-800/80 shrink-0 flex gap-2 items-center">
-            <input type="text" placeholder="흔적을 남기지 않을 대화를 입력하세요..." 
-                   class="flex-1 bg-[#121214] border border-stone-800 rounded-lg px-4 py-2.5 text-xs text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
-            <button class="bg-stone-300 hover:bg-white text-black text-xs font-medium px-4 py-2.5 rounded-lg transition-all shrink-0">
-                전송
-            </button>
-        </div>
-    </main>
-
-    <!-- BOTTOM: 고정 푸터 -->
-    <footer class="w-full max-w-xl mx-auto text-center shrink-0 pt-6">
-        <p class="text-[10px] text-stone-600 font-light tracking-widest uppercase">© 2026 barbara hotel. No logs. No trace. Only Conversation.</p>
-    </footer>
-
-    <!-- 화면 전환 및 타이머 스크립트 -->
-    <script>
-        function goToCheckIn() {
-            document.getElementById('lobbyView').classList.add('hidden-view');
-            document.getElementById('checkInView').classList.remove('hidden-view');
-        }
-        function goToLobby() {
-            document.getElementById('checkInView').classList.add('hidden-view');
-            document.getElementById('chatView').classList.add('hidden-view');
-            document.getElementById('lobbyView').classList.remove('hidden-view');
-        }
-        function goToChat() {
-            document.getElementById('checkInView').classList.add('hidden-view');
-            document.getElementById('chatView').classList.remove('hidden-view');
-            startTimer();
+            document.getElementById('enter-btn').addEventListener('click', enter);
+            document.getElementById('pw-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') enter(); });
         }
 
-        // 실제 째깍거리는 가짜 타이머 로직 (디테일)
-        function startTimer() {
-            let totalSeconds = 24 * 60 * 60 - 1; 
-            const timerElement = document.getElementById('countdownTimer');
-            
-            setInterval(() => {
-                if (totalSeconds <= 0) return;
-                totalSeconds--;
-                
-                let hrs = Math.floor(totalSeconds / 3600);
-                let mins = Math.floor((totalSeconds % 3600) / 60);
-                let secs = totalSeconds % 60;
-                
-                timerElement.innerText = 
-                    `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-            }, 1000);
+        // ── 채팅방 ───────────────────────────────────────────────────
+        async function renderChatRoom(roomId) {
+            const snap = await get(ref(db, `rooms/${roomId}`));
+            if (!snap.exists()) {
+                document.getElementById('app').innerHTML = `<div class="min-h-screen flex items-center justify-center text-stone-500 text-sm">존재하지 않는 객실입니다.</div>`;
+                return;
+            }
+
+            const room = snap.val();
+            const nickname = getNickname(roomId);
+            const remaining = Math.ceil((room.expiresAt - Date.now()) / (1000 * 60 * 60 * 24));
+
+            document.getElementById('app').innerHTML = `
+                <div style="height:100dvh" class="flex flex-col">
+                    <div class="border-b border-stone-800/60 px-4 py-3 flex items-center justify-between bg-[#0B0B0C] shrink-0">
+                        <div class="min-w-0">
+                            <h1 class="font-serif-luxury text-lg tracking-widest text-stone-100 font-light lowercase">barbara hotel</h1>
+                            <p class="text-xs text-stone-600 truncate">${room.topic}</p>
+                        </div>
+                        <div class="text-right shrink-0 ml-4">
+                            <p class="text-[10px] text-stone-600 font-mono">room-${roomId}</p>
+                            <p class="text-[10px] text-stone-700">${remaining}일 후 소멸</p>
+                        </div>
+                    </div>
+
+                    <div id="messages" class="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+                        <div class="text-center py-4">
+                            <p class="font-serif-luxury italic text-stone-600 text-sm">"${room.topic}"</p>
+                            <p class="text-[10px] text-stone-700 mt-2">당신은 <span class="text-stone-500">${nickname}</span>으로 입장했습니다</p>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-stone-800/60 px-4 py-3 bg-[#0B0B0C] shrink-0">
+                        <div class="flex gap-2 max-w-2xl mx-auto">
+                            <input id="msg-input" type="text" placeholder="메시지를 입력하세요..."
+                                   class="flex-1 bg-[#18181B] border border-stone-800 rounded-lg px-4 py-2.5 text-sm text-stone-200 focus:outline-none focus:border-stone-600 transition-colors placeholder:text-stone-600">
+                            <button id="send-btn" class="bg-stone-200 hover:bg-white text-black text-sm font-medium px-4 py-2.5 rounded-lg transition-all shrink-0">전송</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const messagesContainer = document.getElementById('messages');
+
+            onValue(ref(db, `rooms/${roomId}/messages`), (snap) => {
+                messagesContainer.querySelectorAll('.msg-bubble').forEach(el => el.remove());
+
+                const msgs = snap.val();
+                if (!msgs) return;
+
+                Object.values(msgs)
+                    .sort((a, b) => a.timestamp - b.timestamp)
+                    .forEach(msg => {
+                        const isMe = msg.nickname === nickname;
+                        const div = document.createElement('div');
+                        div.className = `msg-bubble flex ${isMe ? 'justify-end' : 'justify-start'}`;
+                        div.innerHTML = `
+                            <div class="max-w-[75%] space-y-1">
+                                ${!isMe ? `<p class="text-[10px] text-stone-600 px-1">${msg.nickname}</p>` : ''}
+                                <div class="px-3 py-2 rounded-xl text-sm leading-relaxed ${isMe ? 'bg-stone-200 text-black' : 'bg-[#1C1C1F] text-stone-200 border border-stone-800/60'}">
+                                    ${msg.text}
+                                </div>
+                                <p class="text-[10px] text-stone-700 px-1 ${isMe ? 'text-right' : ''}">${formatTime(msg.timestamp)}</p>
+                            </div>
+                        `;
+                        messagesContainer.appendChild(div);
+                    });
+
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            });
+
+            const send = async () => {
+                const input = document.getElementById('msg-input');
+                const text = input.value.trim();
+                if (!text) return;
+                input.value = '';
+                await push(ref(db, `rooms/${roomId}/messages`), { text, nickname, timestamp: Date.now() });
+            };
+
+            document.getElementById('send-btn').addEventListener('click', send);
+            document.getElementById('msg-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') send(); });
+            document.getElementById('msg-input').focus();
         }
+
+        window.addEventListener('hashchange', route);
+        route();
     </script>
-
 </body>
 </html>
