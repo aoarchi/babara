@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
-import { db, auth } from "@/lib/firebase";
+import { db } from "@/lib/firebase";
 import {
   doc,
   getDoc,
@@ -14,7 +14,6 @@ import {
   limit,
   serverTimestamp,
 } from "firebase/firestore";
-import { signInAnonymously } from "firebase/auth";
 
 interface MenuItem {
   id: string;
@@ -55,26 +54,16 @@ export default function GuestApp() {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    signInAnonymously(auth).catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    if (!roomId) {
-      setLoading(false);
-      return;
-    }
-    const timer = setTimeout(() => setLoading(false), 6000);
-    getDoc(doc(db, "rooms", roomId))
+    if (!roomId) { setLoading(false); return; }
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("timeout")), 2000)
+    );
+    Promise.race([getDoc(doc(db, "rooms", roomId)), timeout])
       .then((snap) => {
-        clearTimeout(timer);
         if (snap.exists()) setRoom(snap.data() as Room);
         setLoading(false);
       })
-      .catch(() => {
-        clearTimeout(timer);
-        setLoading(false);
-      });
-    return () => clearTimeout(timer);
+      .catch(() => setLoading(false));
   }, [roomId]);
 
   useEffect(() => {

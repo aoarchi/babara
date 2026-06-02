@@ -75,7 +75,10 @@ export default function AdminApp() {
       setLoading(false);
       return;
     }
-    getDoc(doc(db, "rooms", roomId))
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("timeout")), 2000)
+    );
+    Promise.race([getDoc(doc(db, "rooms", roomId)), timeout])
       .then((snap) => {
         if (snap.exists()) {
           setRoom(snap.data() as Room);
