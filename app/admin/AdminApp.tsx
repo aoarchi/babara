@@ -75,14 +75,19 @@ export default function AdminApp() {
       setLoading(false);
       return;
     }
-    getDoc(doc(db, "rooms", roomId)).then((snap) => {
-      if (snap.exists()) {
-        setRoom(snap.data() as Room);
-      } else {
+    getDoc(doc(db, "rooms", roomId))
+      .then((snap) => {
+        if (snap.exists()) {
+          setRoom(snap.data() as Room);
+        } else {
+          setShowSetup(true);
+        }
+        setLoading(false);
+      })
+      .catch(() => {
         setShowSetup(true);
-      }
-      setLoading(false);
-    });
+        setLoading(false);
+      });
   }, [roomId]);
 
   useEffect(() => {

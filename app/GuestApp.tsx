@@ -63,10 +63,12 @@ export default function GuestApp() {
       setLoading(false);
       return;
     }
-    getDoc(doc(db, "rooms", roomId)).then((snap) => {
-      if (snap.exists()) setRoom(snap.data() as Room);
-      setLoading(false);
-    });
+    getDoc(doc(db, "rooms", roomId))
+      .then((snap) => {
+        if (snap.exists()) setRoom(snap.data() as Room);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, [roomId]);
 
   useEffect(() => {
