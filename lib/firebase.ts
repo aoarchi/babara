@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from "firebase/app";
-import { initializeFirestore, memoryLocalCache, getFirestore } from "firebase/firestore";
+import { initializeFirestore, memoryLocalCache, getFirestore, Firestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCaJMI7rgUF0ortiwJ6GNLn0J7tozCuxsk",
@@ -12,7 +12,7 @@ const firebaseConfig = {
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
 
-let db;
+let db: Firestore;
 try {
   db = initializeFirestore(app, {
     localCache: memoryLocalCache(),
