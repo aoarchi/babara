@@ -17,12 +17,26 @@ import {
   deleteDoc,
   doc,
 } from "firebase/firestore";
+import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/api";
+
+const MAPS_API_KEY = "AIzaSyAapi6SdaSAzwXhjdmsc8ZYi5pgrsTCGwE";
+const DEFAULT_CENTER = { lat: 37.5665, lng: 126.978 };
+const mapContainerStyle = { width: "100%", height: "260px" };
+const mapOptions = { disableDefaultUI: true, zoomControl: true, gestureHandling: "greedy" };
 
 const ADMIN_EMAIL = "yongwoogwon@gmail.com";
 
 interface Room {
   id: string;
   name: string;
+}
+
+interface Crew {
+  uid: string;
+  displayName: string;
+  photoURL: string;
+  isLocationVisible: boolean;
+  location?: { lat: number; lng: number };
 }
 
 interface Order {
@@ -49,6 +63,8 @@ export default function SuperAdminApp() {
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [tab, setTab] = useState<"orders" | "chat">("orders");
+  const [crews, setCrews] = useState<Crew[]>([]);
+  const [selectedCrew, setSelectedCrew] = useState<Crew | null>(null);
 
   useEffect(() => {
     return onAuthStateChanged(auth, (u) => {
@@ -62,6 +78,15 @@ export default function SuperAdminApp() {
     if (!user || user.email !== ADMIN_EMAIL) return;
     return onSnapshot(collection(db, "rooms"), (snap) => {
       setRooms(snap.docs.map((d) => ({ id: d.id, ...d.data() } as Room)));
+    });
+  }, [user]);
+
+  // 크루 위치 구독
+  useEffect(() => {
+    if (!user || user.email !== ADMIN_EMAIL) return;
+    return onSnapshot(collection(db, "crews"), (snap) => {
+      const all = snap.docs.map((d) => ({ uid: d.id, ...d.data() } as Crew));
+      setCrews(all.filter((c) => c.location));
     });
   }, [user]);
 
@@ -182,6 +207,50 @@ export default function SuperAdminApp() {
           <p className="text-xs text-slate-400 mb-1">조리 중</p>
           <p className="text-base font-bold text-green-600">{totalConfirmed}건</p>
         </div>
+      </div>
+
+      {/* 크루 지도 */}
+      <div className="border-b border-slate-100">
+        <div className="flex items-center justify-between px-4 py-2">
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">크루 위치</p>
+          <span className="text-xs text-slate-400">{crews.filter(c => c.isLocationVisible).length}명 공유 중</span>
+        </div>
+        <LoadScript googleMapsApiKey={MAPS_API_KEY}>
+          <GoogleMap
+            mapContainerStyle={mapContainerStyle}
+            center={crews.find(c => c.location) ? { lat: crews.find(c => c.location)!.location!.lat, lng: crews.find(c => c.location)!.location!.lng } : DEFAULT_CENTER}
+            zoom={12}
+            options={mapOptions}
+          >
+            {crews.map((crew) =>
+              crew.location ? (
+                <Marker
+                  key={crew.uid}
+                  position={{ lat: crew.location.lat, lng: crew.location.lng }}
+                  onClick={() => setSelectedCrew(crew)}
+                />
+              ) : null
+            )}
+            {selectedCrew?.location && (
+              <InfoWindow
+                position={{ lat: selectedCrew.location.lat, lng: selectedCrew.location.lng }}
+                onCloseClick={() => setSelectedCrew(null)}
+              >
+                <div className="flex items-center gap-2 py-0.5 pr-1">
+                  {selectedCrew.photoURL ? (
+                    <img src={selectedCrew.photoURL} className="w-7 h-7 rounded-full" alt="" referrerPolicy="no-referrer" />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-slate-200" />
+                  )}
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">{selectedCrew.displayName}</p>
+                    <p className="text-xs text-slate-400">{selectedCrew.isLocationVisible ? "공유 중" : "비공개"}</p>
+                  </div>
+                </div>
+              </InfoWindow>
+            )}
+          </GoogleMap>
+        </LoadScript>
       </div>
 
       {/* 방 목록 */}
