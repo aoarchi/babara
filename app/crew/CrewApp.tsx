@@ -602,6 +602,58 @@ export default function CrewApp() {
             </div>
           ))}
 
+          <div className="border-t border-slate-200 my-1" />
+
+          {/* 설정 및 개인정보 (데스크탑) */}
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-200 transition-colors"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-slate-200 rounded-full flex items-center justify-center text-slate-600">
+                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+              </div>
+              <span className="text-sm font-medium text-slate-800">설정 및 개인정보</span>
+            </div>
+            <svg viewBox="0 0 24 24" className={`w-4 h-4 text-slate-400 transition-transform ${showSettings ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2}>
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+
+          {showSettings && (
+            <div className="mx-2 p-3 bg-white rounded-xl shadow-sm space-y-2">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide px-1">내 위치 고정</p>
+              <input
+                value={addressInput}
+                onChange={(e) => setAddressInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && setLocationByAddress()}
+                placeholder="주소 입력"
+                className="w-full text-xs border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-slate-400"
+              />
+              <button
+                onClick={setLocationByAddress}
+                disabled={!addressInput.trim() || geocoding}
+                className="w-full py-2 bg-slate-900 text-white rounded-lg text-xs font-medium disabled:opacity-40"
+              >
+                {geocoding ? "찾는 중..." : "이 주소로 고정"}
+              </button>
+              <button
+                onClick={shareLocation}
+                disabled={locSharing}
+                className="w-full py-2 border border-slate-200 text-slate-600 rounded-lg text-xs font-medium disabled:opacity-40"
+              >
+                {locSharing ? "가져오는 중..." : "현재 위치로 고정"}
+              </button>
+              {profile?.isLocationVisible && (
+                <button onClick={hideLocation} className="w-full py-1.5 text-xs text-slate-400 hover:text-red-500 transition-colors">
+                  위치 공유 끄기
+                </button>
+              )}
+            </div>
+          )}
+
         </div>
 
         {/* 메인 피드 */}
