@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { auth, db } from "@/lib/firebase";
 import {
   GoogleAuthProvider,
@@ -90,6 +90,7 @@ export default function CrewApp() {
   const [selectedCrew, setSelectedCrew] = useState<CrewLocation | null>(null);
   const [shareDone, setShareDone] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const qrRef = useRef<HTMLDivElement>(null);
   const [addressInput, setAddressInput] = useState("");
   const [geocoding, setGeocoding] = useState(false);
   const [currentAddress, setCurrentAddress] = useState("");
@@ -279,6 +280,34 @@ export default function CrewApp() {
       { isLocationVisible: false },
       { merge: true }
     );
+  };
+
+  const printQR = () => {
+    const svgContent = qrRef.current?.querySelector("svg")?.outerHTML ?? "";
+    const win = window.open("", "_blank", "width=520,height=640");
+    if (!win) return;
+    win.document.write(`
+      <!DOCTYPE html>
+      <html><head><title>${user?.displayName} - GRAPE</title>
+      <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: Georgia, serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 48px; text-align: center; background: #fff; }
+        .brand { font-size: 13px; letter-spacing: 4px; color: #aaa; margin-bottom: 12px; }
+        h2 { font-size: 28px; font-weight: bold; color: #111; margin-bottom: 28px; }
+        .qr svg { width: 220px; height: 220px; }
+        .hint { color: #999; font-size: 12px; margin-top: 20px; }
+        .btn { margin-top: 32px; padding: 12px 28px; background: #111; color: #fff; border: none; font-size: 14px; cursor: pointer; letter-spacing: 1px; }
+        @media print { .btn { display: none; } body { justify-content: flex-start; padding-top: 80px; } }
+      </style></head>
+      <body>
+        <div class="brand">GRAPE</div>
+        <h2>${user?.displayName}</h2>
+        <div class="qr">${svgContent}</div>
+        <div class="hint">QR 스캔으로 프로필 방문</div>
+        <button class="btn" onclick="window.print()">인쇄하기</button>
+      </body></html>
+    `);
+    win.document.close();
   };
 
   const shareProfile = async () => {
@@ -510,7 +539,26 @@ export default function CrewApp() {
           </button>
 
           {showSettings && (
-            <div className="mx-5 mb-3 p-4 bg-slate-50 rounded-xl space-y-3">
+            <div className="mx-5 mb-3 p-4 bg-slate-50 rounded-xl space-y-4">
+              {/* 나의 QR */}
+              <div className="space-y-3">
+                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">나의 QR</p>
+                <div className="flex flex-col items-center gap-3 bg-white rounded-xl p-4">
+                  <div ref={qrRef}>
+                    <QRCodeSVG
+                      value={`${typeof window !== "undefined" ? window.location.origin : ""}/babara/profile/?uid=${user.uid}`}
+                      size={160}
+                    />
+                  </div>
+                  <button
+                    onClick={printQR}
+                    className="w-full py-2 bg-slate-900 text-white rounded-lg text-xs font-medium"
+                  >
+                    인쇄하기
+                  </button>
+                </div>
+              </div>
+              <div className="border-t border-slate-200" />
               <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">내 위치 고정</p>
 
               {/* 주소 입력 */}
@@ -742,7 +790,22 @@ export default function CrewApp() {
           </button>
 
           {showSettings && (
-            <div className="mx-2 p-3 bg-white rounded-xl shadow-sm space-y-2">
+            <div className="mx-2 p-3 bg-white rounded-xl shadow-sm space-y-3">
+              {/* 나의 QR */}
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide px-1">나의 QR</p>
+              <div className="flex flex-col items-center gap-2 bg-slate-50 rounded-lg p-3">
+                <QRCodeSVG
+                  value={`${typeof window !== "undefined" ? window.location.origin : ""}/babara/profile/?uid=${user.uid}`}
+                  size={140}
+                />
+                <button
+                  onClick={printQR}
+                  className="w-full py-1.5 bg-slate-900 text-white rounded-lg text-xs font-medium"
+                >
+                  인쇄하기
+                </button>
+              </div>
+              <div className="border-t border-slate-100" />
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide px-1">내 위치 고정</p>
               <input
                 value={addressInput}
