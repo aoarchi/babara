@@ -62,6 +62,7 @@ export default function CrewApp() {
   const [showSettings, setShowSettings] = useState(false);
   const [addressInput, setAddressInput] = useState("");
   const [geocoding, setGeocoding] = useState(false);
+  const [currentAddress, setCurrentAddress] = useState("");
 
   useEffect(() => {
     return onAuthStateChanged(auth, (u) => {
@@ -163,15 +164,26 @@ export default function CrewApp() {
     setLocSharing(true);
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
-        await setDoc(
-          doc(db, "crews", user.uid),
-          {
-            location: { lat: pos.coords.latitude, lng: pos.coords.longitude },
-            isLocationVisible: true,
-            locationUpdatedAt: serverTimestamp(),
-          },
-          { merge: true }
-        );
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        await setDoc(doc(db, "crews", user.uid), {
+          location: loc,
+          isLocationVisible: true,
+          locationUpdatedAt: serverTimestamp(),
+        }, { merge: true });
+
+        // 역지오코딩으로 주소 표시
+        try {
+          const res = await fetch(
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${loc.lat},${loc.lng}&key=AIzaSyAapi6SdaSAzwXhjdmsc8ZYi5pgrsTCGwE&language=ko`
+          );
+          const data = await res.json();
+          if (data.results?.[0]) {
+            const addr = data.results[0].formatted_address;
+            setCurrentAddress(addr);
+            setAddressInput(addr);
+          }
+        } catch {}
+
         setLocSharing(false);
       },
       () => setLocSharing(false),
@@ -446,12 +458,34 @@ export default function CrewApp() {
 
               {/* 현재 위치 */}
               <button
-                onClick={() => { shareLocation(); }}
+                onClick={shareLocation}
                 disabled={locSharing}
                 className="w-full py-2 border border-slate-200 bg-white text-slate-700 rounded-lg text-xs font-medium disabled:opacity-40 transition-opacity"
               >
                 {locSharing ? "위치 가져오는 중..." : "현재 위치로 고정"}
               </button>
+
+              {/* 역지오코딩 결과 + 수정 */}
+              {currentAddress && (
+                <div className="space-y-1.5">
+                  <p className="text-[10px] text-slate-400">감지된 주소 (수정 가능)</p>
+                  <input
+                    value={addressInput}
+                    onChange={(e) => setAddressInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && setLocationByAddress()}
+                    className="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-slate-500 bg-white"
+                  />
+                  {addressInput !== currentAddress && (
+                    <button
+                      onClick={setLocationByAddress}
+                      disabled={geocoding}
+                      className="w-full py-2 bg-slate-900 text-white rounded-lg text-xs font-medium disabled:opacity-40"
+                    >
+                      {geocoding ? "수정 중..." : "수정된 주소로 업데이트"}
+                    </button>
+                  )}
+                </div>
+              )}
 
               {profile?.isLocationVisible && (
                 <button
@@ -646,6 +680,26 @@ export default function CrewApp() {
               >
                 {locSharing ? "가져오는 중..." : "현재 위치로 고정"}
               </button>
+              {currentAddress && (
+                <div className="space-y-1.5">
+                  <p className="text-[10px] text-slate-400">감지된 주소 (수정 가능)</p>
+                  <input
+                    value={addressInput}
+                    onChange={(e) => setAddressInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && setLocationByAddress()}
+                    className="w-full text-xs border border-slate-300 rounded-lg px-3 py-2 outline-none focus:border-slate-500"
+                  />
+                  {addressInput !== currentAddress && (
+                    <button
+                      onClick={setLocationByAddress}
+                      disabled={geocoding}
+                      className="w-full py-1.5 bg-slate-900 text-white rounded-lg text-xs font-medium disabled:opacity-40"
+                    >
+                      {geocoding ? "수정 중..." : "수정된 주소로 업데이트"}
+                    </button>
+                  )}
+                </div>
+              )}
               {profile?.isLocationVisible && (
                 <button onClick={hideLocation} className="w-full py-1.5 text-xs text-slate-400 hover:text-red-500 transition-colors">
                   위치 공유 끄기
