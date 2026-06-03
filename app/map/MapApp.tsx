@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { GoogleMap, LoadScript, Marker } from "@react-google-maps/api";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { GoogleMap, LoadScript, Marker, Circle } from "@react-google-maps/api";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestore";
 
@@ -34,6 +34,28 @@ export default function MapApp() {
   const [crews, setCrews] = useState<Crew[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   const [selected, setSelected] = useState<Crew | null>(null);
+  const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locating, setLocating] = useState(false);
+  const mapRef = useRef<google.maps.Map | null>(null);
+
+  const onMapLoad = useCallback((map: google.maps.Map) => {
+    mapRef.current = map;
+  }, []);
+
+  const goToMyLocation = () => {
+    setLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setMyLocation(loc);
+        mapRef.current?.panTo(loc);
+        mapRef.current?.setZoom(16);
+        setLocating(false);
+      },
+      () => setLocating(false),
+      { enableHighAccuracy: true }
+    );
+  };
 
   useEffect(() => {
     return onSnapshot(collection(db, "crews"), (snap) => {
@@ -69,6 +91,7 @@ export default function MapApp() {
             center={mapCenter}
             zoom={13}
             options={mapOptions}
+            onLoad={onMapLoad}
           >
             {crews.map((crew) =>
               crew.location ? (
@@ -78,6 +101,19 @@ export default function MapApp() {
                   onClick={() => setSelected(crew)}
                 />
               ) : null
+            )}
+            {/* 내 위치 파란 점 */}
+            {myLocation && (
+              <Circle
+                center={myLocation}
+                radius={30}
+                options={{
+                  fillColor: "#4285F4",
+                  fillOpacity: 0.9,
+                  strokeColor: "#ffffff",
+                  strokeWeight: 2,
+                }}
+              />
             )}
           </GoogleMap>
         </LoadScript>
@@ -91,6 +127,22 @@ export default function MapApp() {
         <div className="md:hidden absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/50 text-white text-[10px] px-3 py-1 rounded-full pointer-events-none">
           두 손가락으로 지도 이동 · 한 손가락으로 스크롤
         </div>
+
+        {/* 내 위치 버튼 */}
+        <button
+          onClick={goToMyLocation}
+          disabled={locating}
+          className="absolute bottom-12 md:bottom-4 right-3 w-10 h-10 bg-white shadow-md rounded-full flex items-center justify-center hover:bg-slate-50 transition-colors disabled:opacity-50"
+          title="내 위치로 이동"
+        >
+          {locating ? (
+            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <svg viewBox="0 0 24 24" className="w-5 h-5 text-blue-500" fill="currentColor">
+              <path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm8.94 3A8.994 8.994 0 0 0 13 3.06V1h-2v2.06A8.994 8.994 0 0 0 3.06 11H1v2h2.06A8.994 8.994 0 0 0 11 20.94V23h2v-2.06A8.994 8.994 0 0 0 20.94 13H23v-2h-2.06z"/>
+            </svg>
+          )}
+        </button>
 
         {/* 홈 버튼 */}
         <button
