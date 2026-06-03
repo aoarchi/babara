@@ -134,7 +134,7 @@ export default function CrewApp() {
     setGeocoding(true);
     try {
       const res = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addressInput)}&key=AIzaSyAapi6SdaSAzwXhjdmsc8ZYi5pgrsTCGwE&language=ko`
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addressInput)}&key=AIzaSyAapi6SdaSAzwXhjdmsc8ZYi5pgrsTCGwE&language=ko&region=kr&components=country:KR`
       );
       const data = await res.json();
       if (data.results?.[0]) {
