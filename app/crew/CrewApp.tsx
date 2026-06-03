@@ -409,10 +409,7 @@ export default function CrewApp() {
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-slate-200" />
                 )}
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">{user.displayName}</p>
-                  <p className="text-xs text-slate-400">크루</p>
-                </div>
+                <p className="text-sm font-semibold text-slate-900">{user.displayName}</p>
               </div>
               <p className="text-sm text-slate-700 leading-relaxed">{post.text}</p>
             </div>
