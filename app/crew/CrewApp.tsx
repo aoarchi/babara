@@ -30,13 +30,18 @@ const MAPS_API_KEY = "AIzaSyAapi6SdaSAzwXhjdmsc8ZYi5pgrsTCGwE";
 const DEFAULT_CENTER = { lat: 37.5665, lng: 126.978 };
 
 const MAP_STYLE = [
-  { elementType: "geometry", stylers: [{ saturation: -100 }] },
+  { elementType: "geometry", stylers: [{ color: "#d6d6d6" }] },
   { elementType: "labels.icon", stylers: [{ visibility: "off" }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#444444" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#333333" }] },
   { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }] },
+  { featureType: "landscape", elementType: "geometry", stylers: [{ color: "#e8e8e8" }] },
   { featureType: "road", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
-  { featureType: "water", elementType: "geometry", stylers: [{ color: "#c9c9c9" }] },
+  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#ffffff" }, { weight: 2 }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#9e9e9e" }] },
+  { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#ffffff" }] },
   { featureType: "poi", stylers: [{ visibility: "off" }] },
+  { featureType: "transit", stylers: [{ visibility: "off" }] },
+  { featureType: "administrative", elementType: "geometry.stroke", stylers: [{ color: "#b0b0b0" }, { weight: 1 }] },
 ];
 
 interface CrewLocation {
