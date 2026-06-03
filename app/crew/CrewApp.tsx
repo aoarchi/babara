@@ -203,6 +203,10 @@ export default function CrewApp() {
     );
   };
 
+  const deletePost = async (postId: string) => {
+    await deleteDoc(doc(db, "posts", postId));
+  };
+
   const submitPost = async () => {
     const text = postText.trim();
     if (!text || !user) return;
@@ -824,11 +828,19 @@ export default function CrewApp() {
                   <div className="w-10 h-10 rounded-full bg-slate-200" />
                 )}
                 <p
-                  className="text-sm font-semibold text-slate-900 cursor-pointer hover:underline"
+                  className="flex-1 text-sm font-semibold text-slate-900 cursor-pointer hover:underline"
                   onClick={() => window.location.assign(`/babara/profile/?uid=${post.uid}`)}
                 >
                   {post.displayName}
                 </p>
+                {post.uid === user.uid && (
+                  <button
+                    onClick={() => deletePost(post.id)}
+                    className="text-xs text-slate-300 hover:text-red-400 transition-colors shrink-0"
+                  >
+                    삭제
+                  </button>
+                )}
               </div>
               <p className="text-sm text-slate-700 leading-relaxed">{post.text}</p>
             </div>
