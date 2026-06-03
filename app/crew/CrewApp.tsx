@@ -58,6 +58,7 @@ export default function CrewApp() {
   const [authLoading, setAuthLoading] = useState(true);
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [showQR, setShowQR] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     return onAuthStateChanged(auth, (u) => {
@@ -277,15 +278,130 @@ export default function CrewApp() {
 
   return (
     <div className="min-h-screen bg-slate-100">
+      {/* 모바일 드로어 backdrop */}
+      {drawerOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/40 z-40"
+          onClick={() => setDrawerOpen(false)}
+        />
+      )}
+
+      {/* 모바일 슬라이드 드로어 */}
+      <div className={`md:hidden fixed inset-y-0 left-0 w-4/5 max-w-xs bg-white z-50 overflow-y-auto transform transition-transform duration-300 ease-in-out ${drawerOpen ? "translate-x-0" : "-translate-x-full"}`}>
+        {/* 드로어 프로필 */}
+        <div className="px-4 pt-6 pb-4 border-b border-slate-100">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-lg font-bold text-slate-900">메뉴</span>
+            <button onClick={() => setDrawerOpen(false)} className="text-slate-400">
+              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path d="M18 6L6 18M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div className="flex items-center gap-3">
+            {user.photoURL ? (
+              <img src={user.photoURL} className="w-14 h-14 rounded-full" alt="" referrerPolicy="no-referrer" />
+            ) : (
+              <div className="w-14 h-14 rounded-full bg-slate-200" />
+            )}
+            <div>
+              <p className="font-bold text-slate-900">{user.displayName}</p>
+              <button
+                onClick={() => profile?.isLocationVisible ? hideLocation() : shareLocation()}
+                disabled={locSharing}
+                className="flex items-center gap-1.5 mt-1 disabled:opacity-50"
+              >
+                <div className={`relative w-8 h-5 rounded-full transition-colors duration-200 ${profile?.isLocationVisible ? "bg-green-500" : "bg-slate-300"}`}>
+                  <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${profile?.isLocationVisible ? "translate-x-3.5" : "translate-x-0.5"}`} />
+                </div>
+                <span className={`text-xs ${profile?.isLocationVisible ? "text-green-600" : "text-slate-400"}`}>
+                  {locSharing ? "..." : profile?.isLocationVisible ? "위치 공유 중" : "위치 비공개"}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* 드로어 메뉴 아이템 */}
+        <div className="py-2">
+          {navItems.map((item) => (
+            <button
+              key={item.label}
+              onClick={() => { item.href && window.location.assign(item.href); setDrawerOpen(false); }}
+              className="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 transition-colors"
+            >
+              <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-700">
+                {item.icon}
+              </div>
+              <span className="text-sm font-medium text-slate-800">{item.label}</span>
+            </button>
+          ))}
+
+          {/* QR */}
+          <button
+            onClick={() => { setShowQR(!showQR); }}
+            className="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 transition-colors"
+          >
+            <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-700">
+              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2}>
+                <rect x="3" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/>
+                <rect x="3" y="16" width="5" height="5"/><path d="M21 16h-3v3"/><path d="M21 21h-3"/><path d="M16 21v-3"/>
+              </svg>
+            </div>
+            <span className="text-sm font-medium text-slate-800">내 QR / 링크</span>
+          </button>
+
+          {showQR && (
+            <div className="mx-5 mb-3 p-4 bg-slate-50 rounded-xl space-y-3">
+              <div className="flex justify-center">
+                <QRCodeSVG
+                  value={`${typeof window !== "undefined" ? window.location.origin : ""}/babara/profile/?uid=${user.uid}`}
+                  size={150}
+                />
+              </div>
+              <button
+                onClick={() => navigator.clipboard.writeText(`${window.location.origin}/babara/profile/?uid=${user.uid}`)}
+                className="w-full py-2 border border-slate-200 text-slate-600 rounded-lg text-xs font-medium"
+              >
+                링크 복사
+              </button>
+            </div>
+          )}
+
+          <div className="border-t border-slate-100 my-2" />
+
+          <button
+            onClick={() => signOut(auth)}
+            className="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 transition-colors"
+          >
+            <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-400">
+              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+              </svg>
+            </div>
+            <span className="text-sm font-medium text-slate-500">로그아웃</span>
+          </button>
+        </div>
+      </div>
+
       {/* 상단 네비바 */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-slate-900 h-14 flex items-center px-4 justify-between shadow-md">
-        <div className="flex items-center gap-2">
+      <div className="fixed top-0 left-0 right-0 z-30 bg-slate-900 h-14 flex items-center px-4 justify-between shadow-md">
+        <div className="flex items-center gap-3">
+          {/* 모바일 햄버거 */}
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="md:hidden text-white p-1"
+          >
+            <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2}>
+              <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+          </button>
           <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shrink-0">
             <span
               className="text-slate-900 font-bold leading-none"
               style={{ fontSize: 22, fontFamily: "Georgia, 'Times New Roman', serif" }}
             >
-              b
+              G
             </span>
           </div>
           <span className="text-white font-semibold text-sm hidden sm:block">GRAPE</span>
@@ -298,7 +414,7 @@ export default function CrewApp() {
           )}
           <button
             onClick={() => signOut(auth)}
-            className="text-xs text-slate-500 hover:text-white transition-colors"
+            className="hidden md:block text-xs text-slate-500 hover:text-white transition-colors"
           >
             로그아웃
           </button>
