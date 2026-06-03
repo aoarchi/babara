@@ -20,7 +20,18 @@ import {
   orderBy,
   limit,
   serverTimestamp,
+  deleteDoc,
+  updateDoc,
 } from "firebase/firestore";
+import { QRCodeSVG } from "qrcode.react";
+
+interface FriendRequest {
+  uid: string;
+  displayName: string;
+  photoURL: string;
+  status: string;
+  direction: string;
+}
 
 interface CrewProfile {
   displayName: string;
@@ -45,6 +56,8 @@ export default function CrewApp() {
   const [postText, setPostText] = useState("");
   const [locSharing, setLocSharing] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
+  const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
+  const [showQR, setShowQR] = useState(false);
 
   useEffect(() => {
     return onAuthStateChanged(auth, (u) => {
@@ -88,6 +101,28 @@ export default function CrewApp() {
       setPosts(all.filter((p) => p.uid === user.uid));
     });
   }, [user]);
+
+  useEffect(() => {
+    if (!user) { setFriendRequests([]); return; }
+    return onSnapshot(collection(db, "crews", user.uid, "friends"), (snap) => {
+      const incoming = snap.docs
+        .map((d) => ({ uid: d.id, ...d.data() } as FriendRequest))
+        .filter((f) => f.status === "pending" && f.direction === "received");
+      setFriendRequests(incoming);
+    });
+  }, [user]);
+
+  const acceptFriend = async (fromUid: string) => {
+    if (!user) return;
+    await updateDoc(doc(db, "crews", user.uid, "friends", fromUid), { status: "accepted" });
+    await updateDoc(doc(db, "crews", fromUid, "friends", user.uid), { status: "accepted" });
+  };
+
+  const rejectFriend = async (fromUid: string) => {
+    if (!user) return;
+    await deleteDoc(doc(db, "crews", user.uid, "friends", fromUid));
+    await deleteDoc(doc(db, "crews", fromUid, "friends", user.uid));
+  };
 
   const signIn = async () => {
     const provider = new GoogleAuthProvider();
@@ -300,6 +335,44 @@ export default function CrewApp() {
 
           <div className="border-t border-slate-200 my-1" />
 
+          {/* QR / 링크 공유 */}
+          <div>
+            <button
+              onClick={() => setShowQR(!showQR)}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-200 transition-colors"
+            >
+              <div className="w-9 h-9 bg-slate-200 rounded-full flex items-center justify-center text-slate-700">
+                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <rect x="3" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/>
+                  <rect x="3" y="16" width="5" height="5"/><path d="M21 16h-3v3"/><path d="M21 21h-3"/><path d="M16 21v-3"/>
+                  <path d="M11 3v2"/><path d="M11 8v2"/><path d="M3 11h2"/><path d="M8 11h2"/><path d="M11 13h2"/><path d="M11 18h2"/><path d="M16 11h2"/>
+                </svg>
+              </div>
+              <span className="text-sm font-medium text-slate-800">내 QR / 링크</span>
+            </button>
+            {showQR && (
+              <div className="mx-3 mt-2 p-4 bg-white rounded-xl shadow-sm space-y-3">
+                <div className="flex justify-center">
+                  <QRCodeSVG
+                    value={`${typeof window !== "undefined" ? window.location.origin : ""}/babara/profile/?uid=${user.uid}`}
+                    size={160}
+                  />
+                </div>
+                <button
+                  onClick={() => {
+                    const url = `${window.location.origin}/babara/profile/?uid=${user.uid}`;
+                    navigator.clipboard.writeText(url);
+                  }}
+                  className="w-full py-2 border border-slate-200 text-slate-600 rounded-lg text-xs font-medium hover:bg-slate-50 transition-colors"
+                >
+                  링크 복사
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div className="border-t border-slate-200 my-1" />
+
           {navItems.map((item) => (
             <div
               key={item.label}
@@ -317,7 +390,45 @@ export default function CrewApp() {
 
         {/* 메인 피드 */}
         <div className="flex-1 min-w-0 space-y-3">
-          {/* 근황 작성 */}
+          {/* 친구 요청 알림 */}
+        {friendRequests.length > 0 && (
+          <div className="bg-white rounded-2xl p-4 shadow-sm space-y-3">
+            <p className="text-sm font-semibold text-slate-900">
+              친구 요청 <span className="text-red-500">{friendRequests.length}</span>
+            </p>
+            {friendRequests.map((req) => (
+              <div key={req.uid} className="flex items-center gap-3">
+                {req.photoURL ? (
+                  <img src={req.photoURL} className="w-10 h-10 rounded-full shrink-0" alt="" referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-slate-200 shrink-0" />
+                )}
+                <span
+                  className="flex-1 text-sm font-medium text-slate-800 cursor-pointer hover:underline"
+                  onClick={() => window.location.assign(`/babara/profile/?uid=${req.uid}`)}
+                >
+                  {req.displayName}
+                </span>
+                <div className="flex gap-2 shrink-0">
+                  <button
+                    onClick={() => acceptFriend(req.uid)}
+                    className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-medium"
+                  >
+                    수락
+                  </button>
+                  <button
+                    onClick={() => rejectFriend(req.uid)}
+                    className="px-3 py-1.5 border border-slate-200 text-slate-500 rounded-lg text-xs"
+                  >
+                    거절
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* 근황 작성 */}
           <div className="bg-white rounded-2xl p-4 shadow-sm">
             <div className="flex gap-3 items-center mb-3">
               {user.photoURL ? (
