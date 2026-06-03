@@ -85,6 +85,11 @@ export default function MapApp() {
 
       {/* 지도 - 70% */}
       <div className="h-[70vh] md:h-full md:w-[70%] shrink-0 relative">
+        {/* 컬러 오버레이 */}
+        <div
+          className="absolute inset-0 z-10 pointer-events-none"
+          style={{ backgroundColor: "rgba(0, 176, 240, 0.8)", mixBlendMode: "multiply" }}
+        />
         <LoadScript googleMapsApiKey={MAPS_API_KEY}>
           <GoogleMap
             mapContainerStyle={{ width: "100%", height: "100%" }}
