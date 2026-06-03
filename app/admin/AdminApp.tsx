@@ -19,6 +19,15 @@ interface MenuItem {
   id: string;
   name: string;
   price: number;
+  crewUid?: string;
+  crewName?: string;
+  crewPhotoURL?: string;
+}
+
+interface Crew {
+  uid: string;
+  displayName: string;
+  photoURL: string;
 }
 
 interface Room {
@@ -59,16 +68,23 @@ export default function AdminApp() {
 
   const [setupName, setSetupName] = useState("");
   const [setupMenus, setSetupMenus] = useState([
-    { name: "김치전", price: "5000" },
-    { name: "제육볶음", price: "6000" },
-    { name: "소주", price: "4000" },
-    { name: "맥주", price: "4000" },
+    { name: "김치전", price: "5000", crewUid: "" },
+    { name: "제육볶음", price: "6000", crewUid: "" },
+    { name: "소주", price: "4000", crewUid: "" },
+    { name: "맥주", price: "4000", crewUid: "" },
   ]);
+  const [crews, setCrews] = useState<Crew[]>([]);
   const [setupTossId, setSetupTossId] = useState("");
   const [setupBank, setSetupBank] = useState("");
   const [setupAccountNo, setSetupAccountNo] = useState("");
   const [setupAccountName, setSetupAccountName] = useState("");
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    return onSnapshot(collection(db, "crews"), (snap) => {
+      setCrews(snap.docs.map((d) => ({ uid: d.id, ...d.data() } as Crew)));
+    });
+  }, []);
 
   useEffect(() => {
     if (!roomId) {
@@ -109,7 +125,15 @@ export default function AdminApp() {
     setSaving(true);
     const menus = setupMenus
       .filter((m) => m.name && m.price)
-      .map((m, i) => ({ id: `menu-${i}`, name: m.name, price: parseInt(m.price) }));
+      .map((m, i) => {
+        const crew = crews.find((c) => c.uid === m.crewUid);
+        return {
+          id: `menu-${i}`,
+          name: m.name,
+          price: parseInt(m.price),
+          ...(crew ? { crewUid: crew.uid, crewName: crew.displayName, crewPhotoURL: crew.photoURL } : {}),
+        };
+      });
 
     const roomData: Room = {
       name: setupName,
@@ -175,32 +199,48 @@ export default function AdminApp() {
             메뉴
           </label>
           {setupMenus.map((menu, i) => (
-            <div key={i} className="flex gap-2">
-              <input
-                value={menu.name}
+            <div key={i} className="space-y-1.5">
+              <div className="flex gap-2">
+                <input
+                  value={menu.name}
+                  onChange={(e) => {
+                    const u = [...setupMenus];
+                    u[i] = { ...u[i], name: e.target.value };
+                    setSetupMenus(u);
+                  }}
+                  placeholder="메뉴명"
+                  className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none"
+                />
+                <input
+                  value={menu.price}
+                  onChange={(e) => {
+                    const u = [...setupMenus];
+                    u[i] = { ...u[i], price: e.target.value };
+                    setSetupMenus(u);
+                  }}
+                  placeholder="가격"
+                  type="number"
+                  className="w-24 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none"
+                />
+              </div>
+              <select
+                value={menu.crewUid}
                 onChange={(e) => {
                   const u = [...setupMenus];
-                  u[i] = { ...u[i], name: e.target.value };
+                  u[i] = { ...u[i], crewUid: e.target.value };
                   setSetupMenus(u);
                 }}
-                placeholder="메뉴명"
-                className="flex-1 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none"
-              />
-              <input
-                value={menu.price}
-                onChange={(e) => {
-                  const u = [...setupMenus];
-                  u[i] = { ...u[i], price: e.target.value };
-                  setSetupMenus(u);
-                }}
-                placeholder="가격"
-                type="number"
-                className="w-24 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none"
-              />
+                className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none text-slate-500 bg-white"
+              >
+                <option value="">담당 크루 없음</option>
+                {crews.map((crew) => (
+                  <option key={crew.uid} value={crew.uid}>{crew.displayName}</option>
+                ))}
+              </select>
             </div>
           ))}
           <button
-            onClick={() => setSetupMenus([...setupMenus, { name: "", price: "" }])}
+            onClick={() => setSetupMenus([...setupMenus, { name: "", price: "", crewUid: "" }])}
             className="w-full py-2 text-sm text-slate-400 border border-dashed border-slate-200 rounded-lg"
           >
             + 메뉴 추가

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { db } from "@/lib/firebase";
 import {
@@ -19,6 +19,22 @@ interface MenuItem {
   id: string;
   name: string;
   price: number;
+  crewUid?: string;
+  crewName?: string;
+  crewPhotoURL?: string;
+}
+
+interface OrderItem {
+  id: string;
+  qty: number;
+  crewUid?: string;
+  crewName?: string;
+  crewPhotoURL?: string;
+}
+
+interface OrderForRanking {
+  id: string;
+  items: OrderItem[];
 }
 
 interface Room {
@@ -48,6 +64,7 @@ export default function GuestApp() {
   const [loading, setLoading] = useState(true);
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [messages, setMessages] = useState<Message[]>([]);
+  const [allOrders, setAllOrders] = useState<OrderForRanking[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [orderDone, setOrderDone] = useState(false);
@@ -68,6 +85,14 @@ export default function GuestApp() {
 
   useEffect(() => {
     if (!roomId) return;
+    const q = query(collection(db, "rooms", roomId, "orders"), limit(300));
+    return onSnapshot(q, (snap) => {
+      setAllOrders(snap.docs.map((d) => ({ id: d.id, ...d.data() } as OrderForRanking)));
+    });
+  }, [roomId]);
+
+  useEffect(() => {
+    if (!roomId) return;
     const q = query(
       collection(db, "rooms", roomId, "messages"),
       orderBy("createdAt", "asc"),
@@ -82,6 +107,22 @@ export default function GuestApp() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  const crewRanking = useMemo(() => {
+    const map: Record<string, { crewName: string; crewPhotoURL: string; total: number }> = {};
+    allOrders.forEach((order) => {
+      order.items?.forEach((item) => {
+        if (!item.crewUid) return;
+        if (!map[item.crewUid]) {
+          map[item.crewUid] = { crewName: item.crewName ?? "", crewPhotoURL: item.crewPhotoURL ?? "", total: 0 };
+        }
+        map[item.crewUid].total += item.qty ?? 0;
+      });
+    });
+    return Object.entries(map)
+      .map(([uid, data]) => ({ uid, ...data }))
+      .sort((a, b) => b.total - a.total);
+  }, [allOrders]);
+
   const totalAmount =
     room?.menus.reduce(
       (sum, m) => sum + (quantities[m.id] ?? 0) * m.price,
@@ -93,7 +134,13 @@ export default function GuestApp() {
     if (!room || !hasOrder) return;
     const items = room.menus
       .filter((m) => (quantities[m.id] ?? 0) > 0)
-      .map((m) => ({ id: m.id, name: m.name, price: m.price, qty: quantities[m.id] }));
+      .map((m) => ({
+        id: m.id,
+        name: m.name,
+        price: m.price,
+        qty: quantities[m.id],
+        ...(m.crewUid ? { crewUid: m.crewUid, crewName: m.crewName, crewPhotoURL: m.crewPhotoURL } : {}),
+      }));
 
     await addDoc(collection(db, "rooms", roomId, "orders"), {
       tableNumber,
@@ -165,19 +212,52 @@ export default function GuestApp() {
 
       {/* 주문 영역 */}
       <div className="flex flex-col border-b border-slate-100" style={{ flex: "0 0 50%" }}>
-        <div className="flex-1 overflow-y-auto px-4 pt-3 space-y-1">
+        {/* 크루 인기 랭킹 */}
+        {crewRanking.length > 0 && (
+          <div className="px-4 pt-3 pb-2 overflow-x-auto shrink-0">
+            <div className="flex gap-4">
+              {crewRanking.map((crew, idx) => (
+                <div key={crew.uid} className="flex flex-col items-center gap-1 shrink-0">
+                  <div className="relative">
+                    {crew.crewPhotoURL ? (
+                      <img src={crew.crewPhotoURL} className="w-10 h-10 rounded-full" alt="" referrerPolicy="no-referrer" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-slate-100" />
+                    )}
+                    <span className="absolute -top-1 -left-1 w-4 h-4 bg-slate-900 text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                      {idx + 1}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-slate-700 font-medium">{crew.crewName}</span>
+                  <span className="text-[10px] text-slate-400">{crew.total}건</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className="flex-1 overflow-y-auto px-4 pt-2 space-y-1">
           {room.menus.map((menu) => (
             <div
               key={menu.id}
               className="flex items-center justify-between py-2"
             >
               <div>
-                <span className="text-sm font-medium text-slate-800">
-                  {menu.name}
-                </span>
-                <span className="text-xs text-slate-400 ml-2">
-                  {menu.price.toLocaleString()}원
-                </span>
+                <div className="flex items-center gap-1.5">
+                  {menu.crewPhotoURL && (
+                    <img src={menu.crewPhotoURL} className="w-5 h-5 rounded-full shrink-0" alt="" referrerPolicy="no-referrer" />
+                  )}
+                  <span className="text-sm font-medium text-slate-800">
+                    {menu.name}
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="text-xs text-slate-400">
+                    {menu.price.toLocaleString()}원
+                  </span>
+                  {menu.crewName && (
+                    <span className="text-xs text-slate-300">· {menu.crewName}</span>
+                  )}
+                </div>
               </div>
               <div className="flex items-center gap-3">
                 <button
