@@ -59,6 +59,9 @@ export default function CrewApp() {
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [showQR, setShowQR] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [addressInput, setAddressInput] = useState("");
+  const [geocoding, setGeocoding] = useState(false);
 
   useEffect(() => {
     return onAuthStateChanged(auth, (u) => {
@@ -123,6 +126,31 @@ export default function CrewApp() {
     if (!user) return;
     await deleteDoc(doc(db, "crews", user.uid, "friends", fromUid));
     await deleteDoc(doc(db, "crews", fromUid, "friends", user.uid));
+  };
+
+  const setLocationByAddress = async () => {
+    if (!user || !addressInput.trim()) return;
+    setGeocoding(true);
+    try {
+      const res = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addressInput)}&key=AIzaSyAapi6SdaSAzwXhjdmsc8ZYi5pgrsTCGwE&language=ko`
+      );
+      const data = await res.json();
+      if (data.results?.[0]) {
+        const { lat, lng } = data.results[0].geometry.location;
+        await setDoc(doc(db, "crews", user.uid), {
+          location: { lat, lng },
+          isLocationVisible: true,
+          locationUpdatedAt: serverTimestamp(),
+        }, { merge: true });
+        setAddressInput("");
+      } else {
+        alert("주소를 찾을 수 없어요. 더 자세히 입력해보세요.");
+      }
+    } catch {
+      alert("오류가 발생했어요.");
+    }
+    setGeocoding(false);
   };
 
   const signIn = async () => {
@@ -365,6 +393,74 @@ export default function CrewApp() {
               >
                 링크 복사
               </button>
+            </div>
+          )}
+
+          <div className="border-t border-slate-100 my-2" />
+
+          {/* 설정 및 개인정보 */}
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-slate-50 transition-colors"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-600">
+                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+              </div>
+              <span className="text-sm font-medium text-slate-800">설정 및 개인정보</span>
+            </div>
+            <svg viewBox="0 0 24 24" className={`w-4 h-4 text-slate-400 transition-transform ${showSettings ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth={2}>
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </button>
+
+          {showSettings && (
+            <div className="mx-5 mb-3 p-4 bg-slate-50 rounded-xl space-y-3">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">내 위치 고정</p>
+
+              {/* 주소 입력 */}
+              <div className="space-y-2">
+                <input
+                  value={addressInput}
+                  onChange={(e) => setAddressInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && setLocationByAddress()}
+                  placeholder="주소 입력 (예: 홍대입구역 2번 출구)"
+                  className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-slate-400 bg-white"
+                />
+                <button
+                  onClick={setLocationByAddress}
+                  disabled={!addressInput.trim() || geocoding}
+                  className="w-full py-2 bg-slate-900 text-white rounded-lg text-xs font-medium disabled:opacity-40 transition-opacity"
+                >
+                  {geocoding ? "위치 찾는 중..." : "이 주소로 위치 고정"}
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div className="flex-1 border-t border-slate-200" />
+                <span className="text-xs text-slate-400">또는</span>
+                <div className="flex-1 border-t border-slate-200" />
+              </div>
+
+              {/* 현재 위치 */}
+              <button
+                onClick={() => { shareLocation(); }}
+                disabled={locSharing}
+                className="w-full py-2 border border-slate-200 bg-white text-slate-700 rounded-lg text-xs font-medium disabled:opacity-40 transition-opacity"
+              >
+                {locSharing ? "위치 가져오는 중..." : "현재 위치로 고정"}
+              </button>
+
+              {profile?.isLocationVisible && (
+                <button
+                  onClick={hideLocation}
+                  className="w-full py-2 text-xs text-slate-400 hover:text-red-500 transition-colors"
+                >
+                  위치 공유 끄기
+                </button>
+              )}
             </div>
           )}
 
