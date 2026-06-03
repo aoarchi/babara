@@ -829,7 +829,7 @@ export default function CrewApp() {
                   mapContainerStyle={{ width: "100%", height: "340px" }}
                   center={crewLocations.length > 0 ? { lat: crewLocations[0].location.lat, lng: crewLocations[0].location.lng } : DEFAULT_CENTER}
                   zoom={13}
-                  options={{ disableDefaultUI: true, zoomControl: true, gestureHandling: "cooperative" }}
+                  options={{ disableDefaultUI: true, zoomControl: true, gestureHandling: "greedy" }}
                 >
                   {crewLocations.map((crew) => (
                     <Marker
