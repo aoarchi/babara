@@ -474,7 +474,7 @@ export default function CrewApp() {
             </button>
           ))}
 
-          {/* 내 주소 보내기 */}
+          {/* 내 링크 보내기 */}
           <button
             onClick={() => { shareProfile(); setDrawerOpen(false); }}
             className="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 transition-colors"
@@ -485,7 +485,7 @@ export default function CrewApp() {
               </svg>
             </div>
             <span className="text-sm font-medium text-slate-800">
-              {shareDone ? "완료!" : "내 주소 보내기"}
+              {shareDone ? "완료!" : "내 링크 보내기"}
             </span>
           </button>
 
@@ -691,7 +691,7 @@ export default function CrewApp() {
 
           <div className="border-t border-slate-200 my-1" />
 
-          {/* 내 주소 보내기 */}
+          {/* 내 링크 보내기 */}
           <button
             onClick={shareProfile}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-200 transition-colors"
@@ -702,7 +702,7 @@ export default function CrewApp() {
               </svg>
             </div>
             <span className="text-sm font-medium text-slate-800">
-              {shareDone ? "완료! ✓" : "내 주소 보내기"}
+              {shareDone ? "완료! ✓" : "내 링크 보내기"}
             </span>
           </button>
 
