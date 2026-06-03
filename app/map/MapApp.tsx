@@ -7,10 +7,27 @@ import { collection, onSnapshot, query, orderBy, limit } from "firebase/firestor
 
 const MAPS_API_KEY = "AIzaSyAapi6SdaSAzwXhjdmsc8ZYi5pgrsTCGwE";
 const DEFAULT_CENTER = { lat: 37.5665, lng: 126.978 };
+
+const MAP_STYLE = [
+  { elementType: "geometry", stylers: [{ color: "#cce8f6" }] },
+  { elementType: "labels.icon", stylers: [{ visibility: "off" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#1a3a5c" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }] },
+  { featureType: "poi", elementType: "geometry", stylers: [{ color: "#a8d5ec" }] },
+  { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#90c9e8" }] },
+  { featureType: "road", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
+  { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: "#e0f2fc" }] },
+  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
+  { featureType: "transit", elementType: "geometry", stylers: [{ color: "#6bb8dc" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#00B0F0" }] },
+  { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#ffffff" }] },
+];
+
 const mapOptions = {
   disableDefaultUI: true,
   zoomControl: true,
   gestureHandling: "cooperative",
+  styles: MAP_STYLE,
 };
 
 interface Crew {
@@ -85,11 +102,6 @@ export default function MapApp() {
 
       {/* 지도 - 70% */}
       <div className="h-[70vh] md:h-full md:w-[70%] shrink-0 relative">
-        {/* 컬러 오버레이 */}
-        <div
-          className="absolute inset-0 z-10 pointer-events-none"
-          style={{ backgroundColor: "rgba(0, 176, 240, 0.8)", mixBlendMode: "multiply" }}
-        />
         <LoadScript googleMapsApiKey={MAPS_API_KEY}>
           <GoogleMap
             mapContainerStyle={{ width: "100%", height: "100%" }}

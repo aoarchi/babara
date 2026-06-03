@@ -31,6 +31,21 @@ import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/ap
 const MAPS_API_KEY = "AIzaSyAapi6SdaSAzwXhjdmsc8ZYi5pgrsTCGwE";
 const DEFAULT_CENTER = { lat: 37.5665, lng: 126.978 };
 
+const MAP_STYLE = [
+  { elementType: "geometry", stylers: [{ color: "#cce8f6" }] },
+  { elementType: "labels.icon", stylers: [{ visibility: "off" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#1a3a5c" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }] },
+  { featureType: "poi", elementType: "geometry", stylers: [{ color: "#a8d5ec" }] },
+  { featureType: "poi.park", elementType: "geometry", stylers: [{ color: "#90c9e8" }] },
+  { featureType: "road", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
+  { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: "#e0f2fc" }] },
+  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
+  { featureType: "transit", elementType: "geometry", stylers: [{ color: "#6bb8dc" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#00B0F0" }] },
+  { featureType: "water", elementType: "labels.text.fill", stylers: [{ color: "#ffffff" }] },
+];
+
 interface CrewLocation {
   uid: string;
   displayName: string;
@@ -823,18 +838,13 @@ export default function CrewApp() {
             </div>
 
             {/* 지도 본체 */}
-            <div className={`relative transition-all duration-300 overflow-hidden ${mapCollapsed ? "max-h-0" : "max-h-[400px]"}`}>
-              {/* 컬러 오버레이 */}
-              <div
-                className="absolute inset-0 z-10 pointer-events-none"
-                style={{ backgroundColor: "rgba(0, 176, 240, 0.8)", mixBlendMode: "multiply" }}
-              />
+            <div className={`transition-all duration-300 overflow-hidden ${mapCollapsed ? "max-h-0" : "max-h-[400px]"}`}>
               <LoadScript googleMapsApiKey={MAPS_API_KEY}>
                 <GoogleMap
                   mapContainerStyle={{ width: "100%", height: "340px" }}
                   center={crewLocations.length > 0 ? { lat: crewLocations[0].location.lat, lng: crewLocations[0].location.lng } : DEFAULT_CENTER}
                   zoom={13}
-                  options={{ disableDefaultUI: true, zoomControl: true, gestureHandling: "greedy" }}
+                  options={{ disableDefaultUI: true, zoomControl: true, gestureHandling: "greedy", styles: MAP_STYLE }}
                 >
                   {crewLocations.map((crew) => (
                     <Marker
