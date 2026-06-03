@@ -59,10 +59,10 @@ export default function MapApp() {
     : [];
 
   return (
-    <div className="h-screen flex flex-col md:flex-row overflow-hidden bg-white">
+    <div className="flex flex-col md:h-screen md:flex-row md:overflow-hidden bg-white">
 
       {/* 지도 - 70% */}
-      <div className="h-[70vh] md:h-screen md:w-[70%] shrink-0 relative">
+      <div className="h-[70vh] md:h-full md:w-[70%] shrink-0 relative">
         <LoadScript googleMapsApiKey={MAPS_API_KEY}>
           <GoogleMap
             mapContainerStyle={{ width: "100%", height: "100%" }}
@@ -97,7 +97,7 @@ export default function MapApp() {
       </div>
 
       {/* 피드 패널 - 30% */}
-      <div className="flex-1 md:w-[30%] flex flex-col border-t md:border-t-0 md:border-l border-slate-100 overflow-hidden">
+      <div className="md:flex-1 md:w-[30%] flex flex-col border-t md:border-t-0 md:border-l border-slate-100 md:overflow-hidden min-h-[40vh] md:min-h-0">
 
         {!selected ? (
           /* 선택 안 됐을 때 */
