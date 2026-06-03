@@ -161,7 +161,7 @@ export default function CrewApp() {
           </div>
           <h1 className="text-white text-4xl lg:text-5xl font-bold tracking-tight">babara</h1>
           <p className="text-slate-400 text-base mt-3 leading-relaxed">
-            크루와 팬이 만나는 곳
+            Be with Babara
           </p>
         </div>
 
