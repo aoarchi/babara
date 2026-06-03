@@ -5,8 +5,6 @@ import { auth, db } from "@/lib/firebase";
 import {
   GoogleAuthProvider,
   signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
   signOut,
   onAuthStateChanged,
   User,
@@ -97,7 +95,6 @@ export default function CrewApp() {
   const [currentAddress, setCurrentAddress] = useState("");
 
   useEffect(() => {
-    getRedirectResult(auth).catch(() => {});
     return onAuthStateChanged(auth, (u) => {
       setUser(u);
       setAuthLoading(false);
@@ -206,13 +203,7 @@ export default function CrewApp() {
 
   const signIn = async () => {
     const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (err: any) {
-      if (err.code === "auth/popup-blocked" || err.code === "auth/popup-closed-by-user") {
-        await signInWithRedirect(auth, provider);
-      }
-    }
+    await signInWithPopup(auth, provider).catch(() => {});
   };
 
   const shareLocation = () => {
