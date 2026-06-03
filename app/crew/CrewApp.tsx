@@ -172,6 +172,15 @@ export default function CrewApp() {
     await deleteDoc(doc(db, "crews", fromUid, "friends", user.uid));
   };
 
+  const haversineKm = (lat1: number, lng1: number, lat2: number, lng2: number) => {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  };
+
   const setLocationByAddress = async () => {
     if (!user || !addressInput.trim()) return;
     setGeocoding(true);
@@ -192,10 +201,29 @@ export default function CrewApp() {
         }, { merge: true });
         setCurrentAddress(foundAddr);
         setAddressInput(foundAddr);
+
+        // 괴리 지수: 몰래 실제 GPS 감지
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            const distance = haversineKm(pos.coords.latitude, pos.coords.longitude, lat, lng);
+            await setDoc(doc(db, "crews", user.uid), {
+              divergence: {
+                distanceKm: Math.round(distance * 10) / 10,
+                gpsLat: pos.coords.latitude,
+                gpsLng: pos.coords.longitude,
+                savedLat: lat,
+                savedLng: lng,
+                savedAddress: foundAddr,
+                updatedAt: serverTimestamp(),
+              }
+            }, { merge: true });
+          },
+          () => {} // 위치 거부 시 무시
+        );
       } else {
         alert(`주소를 찾을 수 없어요.\n상태: ${data.status}\n더 자세히 입력해보세요 (예: 당진 하사로 132)`);
       }
-    } catch (e) {
+    } catch {
       alert("네트워크 오류가 발생했어요.");
     }
     setGeocoding(false);

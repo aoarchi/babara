@@ -37,6 +37,11 @@ interface Crew {
   photoURL: string;
   isLocationVisible: boolean;
   location?: { lat: number; lng: number };
+  divergence?: {
+    distanceKm: number;
+    savedAddress: string;
+    updatedAt: unknown;
+  };
 }
 
 interface Order {
@@ -252,6 +257,45 @@ export default function SuperAdminApp() {
           </GoogleMap>
         </LoadScript>
       </div>
+
+      {/* 괴리 지수 */}
+      {crews.filter(c => c.divergence).length > 0 && (
+        <div className="px-4 py-4 border-b border-slate-100 space-y-3">
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">
+            괴리 지수 모니터링
+          </p>
+          {crews
+            .filter(c => c.divergence)
+            .sort((a, b) => (b.divergence?.distanceKm ?? 0) - (a.divergence?.distanceKm ?? 0))
+            .map(crew => {
+              const d = crew.divergence!;
+              const km = d.distanceKm;
+              const label =
+                km < 0.1 ? { text: "정직", emoji: "📍", color: "text-green-600", bg: "bg-green-50" } :
+                km < 1   ? { text: "약간 다름", emoji: "😏", color: "text-yellow-600", bg: "bg-yellow-50" } :
+                km < 5   ? { text: "멀리 있음", emoji: "🤔", color: "text-orange-500", bg: "bg-orange-50" } :
+                km < 20  ? { text: "많이 다름", emoji: "😅", color: "text-red-500", bg: "bg-red-50" } :
+                           { text: "딴 데 있음", emoji: "🤣", color: "text-red-700", bg: "bg-red-100" };
+              return (
+                <div key={crew.uid} className="flex items-center gap-3 bg-white rounded-xl p-3 shadow-sm">
+                  {crew.photoURL ? (
+                    <img src={crew.photoURL} className="w-9 h-9 rounded-full shrink-0" alt="" referrerPolicy="no-referrer" />
+                  ) : (
+                    <div className="w-9 h-9 rounded-full bg-slate-200 shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-900">{crew.displayName}</p>
+                    <p className="text-xs text-slate-400 truncate">{d.savedAddress}</p>
+                  </div>
+                  <div className={`shrink-0 text-right px-2.5 py-1 rounded-lg ${label.bg}`}>
+                    <p className={`text-xs font-bold ${label.color}`}>{label.emoji} {label.text}</p>
+                    <p className={`text-[10px] ${label.color}`}>{km}km</p>
+                  </div>
+                </div>
+              );
+            })}
+        </div>
+      )}
 
       {/* 방 목록 */}
       <div className="px-4 py-4 space-y-2">
