@@ -91,21 +91,24 @@ export default function CrewApp() {
     });
   }, [user]);
 
+  // 내 근황 (사이드바용)
   useEffect(() => {
-    if (!user) {
-      setPosts([]);
-      return;
-    }
-    const q = query(
-      collection(db, "posts"),
-      orderBy("createdAt", "desc"),
-      limit(50)
-    );
+    if (!user) { setPosts([]); return; }
+    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(50));
     return onSnapshot(q, (snap) => {
       const all = snap.docs.map((d) => ({ id: d.id, ...d.data() } as Post));
       setPosts(all.filter((p) => p.uid === user.uid));
     });
   }, [user]);
+
+  // 전체 피드 (메인 피드용)
+  const [feedPosts, setFeedPosts] = useState<Post[]>([]);
+  useEffect(() => {
+    const q = query(collection(db, "posts"), orderBy("createdAt", "desc"), limit(100));
+    return onSnapshot(q, (snap) => {
+      setFeedPosts(snap.docs.map((d) => ({ id: d.id, ...d.data() } as Post)));
+    });
+  }, []);
 
   useEffect(() => {
     if (!user) { setFriendRequests([]); return; }
@@ -559,6 +562,31 @@ export default function CrewApp() {
 
         {/* 좌측 사이드바 (데스크탑) */}
         <div className="hidden md:flex flex-col w-64 shrink-0 gap-1">
+          {/* 내 상태 */}
+          <div className="bg-white rounded-xl p-3 shadow-sm mb-1">
+            <div className="flex items-center gap-2 mb-2">
+              {user.photoURL ? (
+                <img src={user.photoURL} className="w-7 h-7 rounded-full shrink-0" alt="" referrerPolicy="no-referrer" />
+              ) : (
+                <div className="w-7 h-7 rounded-full bg-slate-200 shrink-0" />
+              )}
+              <span className="text-xs font-semibold text-slate-700">내 상태</span>
+            </div>
+            <textarea
+              value={postText}
+              onChange={(e) => setPostText(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submitPost(); }}
+              placeholder="지금 뭐 하고 있나요?"
+              rows={postText ? 3 : 2}
+              className="w-full text-xs outline-none resize-none placeholder:text-slate-300 text-slate-800 bg-slate-50 rounded-lg px-3 py-2"
+            />
+            {postText.trim() && (
+              <button onClick={submitPost} className="w-full mt-2 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-semibold">
+                올리기
+              </button>
+            )}
+          </div>
+
           {/* 프로필 */}
           <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-200 transition-colors">
             {user.photoURL ? (
@@ -750,62 +778,57 @@ export default function CrewApp() {
           </div>
         )}
 
-        {/* 근황 작성 */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm">
-            <div className="flex gap-3 items-center mb-3">
+          {/* 모바일 내 상태 작성란 */}
+          <div className="md:hidden bg-white rounded-2xl p-3 shadow-sm">
+            <div className="flex gap-2 items-center">
               {user.photoURL ? (
-                <img src={user.photoURL} className="w-10 h-10 rounded-full shrink-0" alt="" referrerPolicy="no-referrer" />
+                <img src={user.photoURL} className="w-8 h-8 rounded-full shrink-0" alt="" referrerPolicy="no-referrer" />
               ) : (
-                <div className="w-10 h-10 rounded-full bg-slate-200 shrink-0" />
+                <div className="w-8 h-8 rounded-full bg-slate-200 shrink-0" />
               )}
-              <button
-                onClick={() => document.getElementById("post-input")?.focus()}
-                className="flex-1 text-left px-4 py-2.5 bg-slate-100 hover:bg-slate-200 rounded-full text-sm text-slate-400 transition-colors"
-              >
-                지금 뭐 하고 있나요?
-              </button>
-            </div>
-            <div className="border-t border-slate-100 pt-3">
               <textarea
-                id="post-input"
                 value={postText}
                 onChange={(e) => setPostText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submitPost();
-                }}
-                placeholder="근황을 입력하세요..."
+                placeholder="내 상태..."
                 rows={postText ? 3 : 1}
-                className="w-full text-sm outline-none resize-none placeholder:text-slate-300 text-slate-800 transition-all"
+                className="flex-1 text-sm outline-none resize-none placeholder:text-slate-300 text-slate-800 bg-slate-50 rounded-xl px-3 py-2"
               />
-              {postText.trim() && (
-                <div className="flex justify-end mt-2">
-                  <button
-                    onClick={submitPost}
-                    className="px-5 py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold"
-                  >
-                    올리기
-                  </button>
-                </div>
-              )}
             </div>
+            {postText.trim() && (
+              <div className="flex justify-end mt-2">
+                <button onClick={submitPost} className="px-4 py-1.5 bg-slate-900 text-white rounded-xl text-xs font-semibold">
+                  올리기
+                </button>
+              </div>
+            )}
           </div>
 
-
-          {/* 포스트 피드 */}
-          {posts.length === 0 && (
+          {/* 전체 피드 */}
+          {feedPosts.length === 0 && (
             <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
-              <p className="text-sm text-slate-300">첫 근황을 올려보세요</p>
+              <p className="text-sm text-slate-300">아직 근황이 없어요</p>
             </div>
           )}
-          {posts.map((post) => (
+          {feedPosts.map((post) => (
             <div key={post.id} className="bg-white rounded-2xl p-4 shadow-sm">
               <div className="flex items-center gap-3 mb-3">
-                {user.photoURL ? (
-                  <img src={user.photoURL} className="w-10 h-10 rounded-full" alt="" referrerPolicy="no-referrer" />
+                {post.photoURL ? (
+                  <img
+                    src={post.photoURL}
+                    className="w-10 h-10 rounded-full cursor-pointer"
+                    alt=""
+                    referrerPolicy="no-referrer"
+                    onClick={() => window.location.assign(`/babara/profile/?uid=${post.uid}`)}
+                  />
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-slate-200" />
                 )}
-                <p className="text-sm font-semibold text-slate-900">{user.displayName}</p>
+                <p
+                  className="text-sm font-semibold text-slate-900 cursor-pointer hover:underline"
+                  onClick={() => window.location.assign(`/babara/profile/?uid=${post.uid}`)}
+                >
+                  {post.displayName}
+                </p>
               </div>
               <p className="text-sm text-slate-700 leading-relaxed">{post.text}</p>
             </div>
