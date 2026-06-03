@@ -275,7 +275,7 @@ export default function CrewApp() {
         {/* 좌측 사이드바 (데스크탑) */}
         <div className="hidden md:flex flex-col w-64 shrink-0 gap-1">
           {/* 프로필 */}
-          <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-200 cursor-pointer transition-colors">
+          <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-200 transition-colors">
             {user.photoURL ? (
               <img src={user.photoURL} className="w-9 h-9 rounded-full" alt="" referrerPolicy="no-referrer" />
             ) : (
@@ -283,9 +283,15 @@ export default function CrewApp() {
             )}
             <div>
               <p className="text-sm font-semibold text-slate-900">{user.displayName}</p>
-              <p className={`text-xs ${profile?.isLocationVisible ? "text-green-600" : "text-slate-400"}`}>
-                {profile?.isLocationVisible ? "위치 공유 중" : "위치 비공개"}
-              </p>
+              <button
+                onClick={() => profile?.isLocationVisible ? hideLocation() : shareLocation()}
+                disabled={locSharing}
+                className={`text-xs underline underline-offset-2 decoration-dotted transition-colors disabled:opacity-50 ${
+                  profile?.isLocationVisible ? "text-green-600 hover:text-green-700" : "text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                {locSharing ? "위치 가져오는 중..." : profile?.isLocationVisible ? "위치 공유 중" : "위치 비공개"}
+              </button>
             </div>
           </div>
 
