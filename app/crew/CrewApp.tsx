@@ -477,6 +477,9 @@ export default function CrewApp() {
             </div>
             <span className="text-sm font-medium text-slate-500">로그아웃</span>
           </button>
+
+          {/* 하단 안전 영역 */}
+          <div className="h-16" />
         </div>
       </div>
 
