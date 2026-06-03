@@ -310,29 +310,6 @@ export default function CrewApp() {
             </div>
           ))}
 
-          <div className="border-t border-slate-200 my-1" />
-
-          {/* 위치 공유 카드 */}
-          <div className="bg-white rounded-xl p-4 space-y-3 shadow-sm">
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">내 위치</p>
-            <div className="flex gap-2">
-              <button
-                onClick={shareLocation}
-                disabled={locSharing}
-                className="flex-1 py-2 bg-slate-900 text-white rounded-lg text-xs font-medium disabled:opacity-40 transition-opacity"
-              >
-                {locSharing ? "가져오는 중..." : "위치 업데이트"}
-              </button>
-              {profile?.isLocationVisible && (
-                <button
-                  onClick={hideLocation}
-                  className="px-3 py-2 border border-slate-200 text-slate-500 rounded-lg text-xs hover:bg-slate-50 transition-colors"
-                >
-                  숨기기
-                </button>
-              )}
-            </div>
-          </div>
         </div>
 
         {/* 메인 피드 */}
@@ -377,29 +354,6 @@ export default function CrewApp() {
             </div>
           </div>
 
-          {/* 모바일 위치 공유 */}
-          <div className="md:hidden bg-white rounded-2xl p-4 shadow-sm flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-slate-800">내 위치 공유</p>
-              <p className={`text-xs mt-0.5 ${profile?.isLocationVisible ? "text-green-600" : "text-slate-400"}`}>
-                {profile?.isLocationVisible ? "공유 중" : "비공개"}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={shareLocation}
-                disabled={locSharing}
-                className="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-medium disabled:opacity-40"
-              >
-                {locSharing ? "..." : "업데이트"}
-              </button>
-              {profile?.isLocationVisible && (
-                <button onClick={hideLocation} className="px-3 py-2 border border-slate-200 text-slate-500 rounded-lg text-xs">
-                  숨기기
-                </button>
-              )}
-            </div>
-          </div>
 
           {/* 포스트 피드 */}
           {posts.length === 0 && (
