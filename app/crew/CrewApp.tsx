@@ -201,96 +201,237 @@ export default function CrewApp() {
     );
   }
 
-  return (
-    <div className="max-w-md mx-auto min-h-screen bg-white">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100">
-        <div className="flex items-center gap-2.5">
-          {user.photoURL ? (
-            <img src={user.photoURL} className="w-7 h-7 rounded-full" alt="" referrerPolicy="no-referrer" />
-          ) : (
-            <div className="w-7 h-7 rounded-full bg-slate-200" />
-          )}
-          <span className="text-sm font-semibold text-slate-900">{user.displayName}</span>
-        </div>
-        <button
-          onClick={() => signOut(auth)}
-          className="text-xs text-slate-400 hover:text-slate-600"
-        >
-          로그아웃
-        </button>
-      </div>
+  const navItems = [
+    {
+      label: "팬",
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      ),
+    },
+    {
+      label: "저장됨",
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+        </svg>
+      ),
+    },
+    {
+      label: "방",
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2}>
+          <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+          <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+        </svg>
+      ),
+    },
+    {
+      label: "지도",
+      href: "/babara/map/",
+      icon: (
+        <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" />
+        </svg>
+      ),
+    },
+  ];
 
-      <div className="px-4 py-4 space-y-4 pb-12">
-        {/* 위치 공유 카드 */}
-        <div className="border border-slate-100 rounded-xl p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-700">내 위치 공유</span>
+  return (
+    <div className="min-h-screen bg-slate-100">
+      {/* 상단 네비바 */}
+      <div className="fixed top-0 left-0 right-0 z-50 bg-slate-900 h-14 flex items-center px-4 justify-between shadow-md">
+        <div className="flex items-center gap-2">
+          <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shrink-0">
             <span
-              className={`text-xs px-2.5 py-0.5 rounded-full font-medium ${
-                profile?.isLocationVisible
-                  ? "bg-green-50 text-green-600"
-                  : "bg-slate-100 text-slate-400"
-              }`}
+              className="text-slate-900 font-bold leading-none"
+              style={{ fontSize: 22, fontFamily: "Georgia, 'Times New Roman', serif" }}
             >
-              {profile?.isLocationVisible ? "공유 중" : "비공개"}
+              b
             </span>
           </div>
-          <p className="text-xs text-slate-400">
-            팬들이 지도에서 내 위치를 볼 수 있어요. 버튼을 누르면 현재 위치로 업데이트돼요.
-          </p>
-          <div className="flex gap-2">
-            <button
-              onClick={shareLocation}
-              disabled={locSharing}
-              className="flex-1 py-2.5 bg-slate-900 text-white rounded-lg text-xs font-medium disabled:bg-slate-200 disabled:text-slate-400 transition-colors"
-            >
-              {locSharing ? "위치 가져오는 중..." : "현재 위치로 공유"}
-            </button>
-            {profile?.isLocationVisible && (
-              <button
-                onClick={hideLocation}
-                className="px-4 py-2.5 border border-slate-200 text-slate-500 rounded-lg text-xs hover:bg-slate-50 transition-colors"
-              >
-                숨기기
-              </button>
-            )}
-          </div>
+          <span className="text-white font-semibold text-sm hidden sm:block">babara</span>
         </div>
-
-        {/* 근황 올리기 */}
-        <div className="border border-slate-100 rounded-xl p-4 space-y-3">
-          <span className="text-sm font-medium text-slate-700">근황 올리기</span>
-          <textarea
-            value={postText}
-            onChange={(e) => setPostText(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submitPost();
-            }}
-            placeholder="지금 뭐 하고 있나요?"
-            rows={3}
-            className="w-full text-sm border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-slate-400 resize-none"
-          />
+        <div className="flex items-center gap-3">
+          {user.photoURL ? (
+            <img src={user.photoURL} className="w-8 h-8 rounded-full" alt="" referrerPolicy="no-referrer" />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-slate-700" />
+          )}
           <button
-            onClick={submitPost}
-            disabled={!postText.trim()}
-            className="w-full py-2.5 bg-slate-900 text-white rounded-lg text-sm font-medium disabled:bg-slate-100 disabled:text-slate-400 transition-colors"
+            onClick={() => signOut(auth)}
+            className="text-xs text-slate-500 hover:text-white transition-colors"
           >
-            올리기
+            로그아웃
           </button>
         </div>
+      </div>
 
-        {/* 내 근황 */}
-        {posts.length > 0 && (
-          <div className="space-y-3">
-            <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">내 근황</p>
-            {posts.map((post) => (
-              <div key={post.id} className="border border-slate-100 rounded-xl p-3">
-                <p className="text-sm text-slate-700 leading-relaxed">{post.text}</p>
-              </div>
-            ))}
+      {/* 바디 */}
+      <div className="pt-14 pb-20 md:pb-6 max-w-5xl mx-auto flex gap-4 px-3 py-4">
+
+        {/* 좌측 사이드바 (데스크탑) */}
+        <div className="hidden md:flex flex-col w-64 shrink-0 gap-1">
+          {/* 프로필 */}
+          <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-200 cursor-pointer transition-colors">
+            {user.photoURL ? (
+              <img src={user.photoURL} className="w-9 h-9 rounded-full" alt="" referrerPolicy="no-referrer" />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-slate-300" />
+            )}
+            <div>
+              <p className="text-sm font-semibold text-slate-900">{user.displayName}</p>
+              <p className={`text-xs ${profile?.isLocationVisible ? "text-green-600" : "text-slate-400"}`}>
+                {profile?.isLocationVisible ? "위치 공유 중" : "위치 비공개"}
+              </p>
+            </div>
           </div>
-        )}
+
+          <div className="border-t border-slate-200 my-1" />
+
+          {navItems.map((item) => (
+            <div
+              key={item.label}
+              onClick={() => item.href && window.location.assign(item.href)}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-200 cursor-pointer transition-colors"
+            >
+              <div className="w-9 h-9 bg-slate-200 rounded-full flex items-center justify-center text-slate-700">
+                {item.icon}
+              </div>
+              <span className="text-sm font-medium text-slate-800">{item.label}</span>
+            </div>
+          ))}
+
+          <div className="border-t border-slate-200 my-1" />
+
+          {/* 위치 공유 카드 */}
+          <div className="bg-white rounded-xl p-4 space-y-3 shadow-sm">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">내 위치</p>
+            <div className="flex gap-2">
+              <button
+                onClick={shareLocation}
+                disabled={locSharing}
+                className="flex-1 py-2 bg-slate-900 text-white rounded-lg text-xs font-medium disabled:opacity-40 transition-opacity"
+              >
+                {locSharing ? "가져오는 중..." : "위치 업데이트"}
+              </button>
+              {profile?.isLocationVisible && (
+                <button
+                  onClick={hideLocation}
+                  className="px-3 py-2 border border-slate-200 text-slate-500 rounded-lg text-xs hover:bg-slate-50 transition-colors"
+                >
+                  숨기기
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* 메인 피드 */}
+        <div className="flex-1 min-w-0 space-y-3">
+          {/* 근황 작성 */}
+          <div className="bg-white rounded-2xl p-4 shadow-sm">
+            <div className="flex gap-3 items-center mb-3">
+              {user.photoURL ? (
+                <img src={user.photoURL} className="w-10 h-10 rounded-full shrink-0" alt="" referrerPolicy="no-referrer" />
+              ) : (
+                <div className="w-10 h-10 rounded-full bg-slate-200 shrink-0" />
+              )}
+              <button
+                onClick={() => document.getElementById("post-input")?.focus()}
+                className="flex-1 text-left px-4 py-2.5 bg-slate-100 hover:bg-slate-200 rounded-full text-sm text-slate-400 transition-colors"
+              >
+                지금 뭐 하고 있나요?
+              </button>
+            </div>
+            <div className="border-t border-slate-100 pt-3">
+              <textarea
+                id="post-input"
+                value={postText}
+                onChange={(e) => setPostText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) submitPost();
+                }}
+                placeholder="근황을 입력하세요..."
+                rows={postText ? 3 : 1}
+                className="w-full text-sm outline-none resize-none placeholder:text-slate-300 text-slate-800 transition-all"
+              />
+              {postText.trim() && (
+                <div className="flex justify-end mt-2">
+                  <button
+                    onClick={submitPost}
+                    className="px-5 py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold"
+                  >
+                    올리기
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 모바일 위치 공유 */}
+          <div className="md:hidden bg-white rounded-2xl p-4 shadow-sm flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-slate-800">내 위치 공유</p>
+              <p className={`text-xs mt-0.5 ${profile?.isLocationVisible ? "text-green-600" : "text-slate-400"}`}>
+                {profile?.isLocationVisible ? "공유 중" : "비공개"}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={shareLocation}
+                disabled={locSharing}
+                className="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-medium disabled:opacity-40"
+              >
+                {locSharing ? "..." : "업데이트"}
+              </button>
+              {profile?.isLocationVisible && (
+                <button onClick={hideLocation} className="px-3 py-2 border border-slate-200 text-slate-500 rounded-lg text-xs">
+                  숨기기
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* 포스트 피드 */}
+          {posts.length === 0 && (
+            <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
+              <p className="text-sm text-slate-300">첫 근황을 올려보세요</p>
+            </div>
+          )}
+          {posts.map((post) => (
+            <div key={post.id} className="bg-white rounded-2xl p-4 shadow-sm">
+              <div className="flex items-center gap-3 mb-3">
+                {user.photoURL ? (
+                  <img src={user.photoURL} className="w-10 h-10 rounded-full" alt="" referrerPolicy="no-referrer" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-slate-200" />
+                )}
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">{user.displayName}</p>
+                  <p className="text-xs text-slate-400">크루</p>
+                </div>
+              </div>
+              <p className="text-sm text-slate-700 leading-relaxed">{post.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 모바일 하단 네비 */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 flex justify-around py-2 z-50">
+        {navItems.map((item) => (
+          <button
+            key={item.label}
+            onClick={() => item.href && window.location.assign(item.href)}
+            className="flex flex-col items-center gap-0.5 px-4 py-1 text-slate-500"
+          >
+            {item.icon}
+            <span className="text-[10px]">{item.label}</span>
+          </button>
+        ))}
       </div>
     </div>
   );
