@@ -281,16 +281,19 @@ export default function CrewApp() {
             ) : (
               <div className="w-9 h-9 rounded-full bg-slate-300" />
             )}
-            <div>
+            <div className="flex flex-col gap-2">
               <p className="text-sm font-semibold text-slate-900">{user.displayName}</p>
               <button
                 onClick={() => profile?.isLocationVisible ? hideLocation() : shareLocation()}
                 disabled={locSharing}
-                className={`text-xs underline underline-offset-2 decoration-dotted transition-colors disabled:opacity-50 ${
-                  profile?.isLocationVisible ? "text-green-600 hover:text-green-700" : "text-slate-400 hover:text-slate-600"
-                }`}
+                className="flex items-center gap-2 disabled:opacity-50"
               >
-                {locSharing ? "위치 가져오는 중..." : profile?.isLocationVisible ? "위치 공유 중" : "위치 비공개"}
+                <div className={`relative w-10 h-6 rounded-full transition-colors duration-200 ${profile?.isLocationVisible ? "bg-green-500" : "bg-slate-300"}`}>
+                  <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200 ${profile?.isLocationVisible ? "translate-x-5" : "translate-x-1"}`} />
+                </div>
+                <span className={`text-xs ${profile?.isLocationVisible ? "text-green-600" : "text-slate-400"}`}>
+                  {locSharing ? "가져오는 중..." : profile?.isLocationVisible ? "위치 공유 중" : "위치 비공개"}
+                </span>
               </button>
             </div>
           </div>
