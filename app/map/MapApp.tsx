@@ -10,7 +10,7 @@ const DEFAULT_CENTER = { lat: 37.5665, lng: 126.978 };
 const mapOptions = {
   disableDefaultUI: true,
   zoomControl: true,
-  gestureHandling: "greedy",
+  gestureHandling: "cooperative",
 };
 
 interface Crew {
@@ -85,6 +85,11 @@ export default function MapApp() {
         {/* 활동 중 뱃지 */}
         <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-sm text-xs font-medium text-slate-700">
           {crews.length > 0 ? `${crews.length}명 활동 중` : "활동 중인 사람 없음"}
+        </div>
+
+        {/* 모바일 안내 */}
+        <div className="md:hidden absolute bottom-3 left-1/2 -translate-x-1/2 bg-black/50 text-white text-[10px] px-3 py-1 rounded-full pointer-events-none">
+          두 손가락으로 지도 이동 · 한 손가락으로 스크롤
         </div>
 
         {/* 홈 버튼 */}
