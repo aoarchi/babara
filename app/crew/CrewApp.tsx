@@ -189,14 +189,14 @@ export default function CrewApp() {
           <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center mb-7 shadow-sm">
             <span
               className="text-slate-900 font-bold leading-none select-none"
-              style={{ fontSize: 36, fontFamily: "Georgia, 'Times New Roman', serif" }}
+              style={{ fontSize: 30, fontFamily: "Georgia, 'Times New Roman', serif" }}
             >
-              b
+              G
             </span>
           </div>
-          <h1 className="text-white text-4xl lg:text-5xl font-bold tracking-tight">babara</h1>
+          <h1 className="text-white text-4xl lg:text-5xl font-bold tracking-tight">GRAPE</h1>
           <p className="text-slate-400 text-base mt-3 leading-relaxed">
-            Be with Babara
+            Be the Grape
           </p>
         </div>
 
@@ -204,7 +204,7 @@ export default function CrewApp() {
         <div className="bg-white flex items-center justify-center px-8 py-12 lg:flex-1">
           <div className="w-full max-w-sm space-y-5">
             <div>
-              <h2 className="text-xl font-semibold text-slate-900">babara에 로그인</h2>
+              <h2 className="text-xl font-semibold text-slate-900">GRAPE에 로그인</h2>
               <p className="text-sm text-slate-400 mt-1">크루 계정으로 시작하세요</p>
             </div>
 
@@ -288,7 +288,7 @@ export default function CrewApp() {
               b
             </span>
           </div>
-          <span className="text-white font-semibold text-sm hidden sm:block">babara</span>
+          <span className="text-white font-semibold text-sm hidden sm:block">GRAPE</span>
         </div>
         <div className="flex items-center gap-3">
           {user.photoURL ? (

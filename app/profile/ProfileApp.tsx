@@ -141,12 +141,12 @@ export default function ProfileApp() {
           <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shrink-0">
             <span
               className="text-slate-900 font-bold leading-none"
-              style={{ fontSize: 22, fontFamily: "Georgia, 'Times New Roman', serif" }}
+              style={{ fontSize: 18, fontFamily: "Georgia, 'Times New Roman', serif" }}
             >
-              b
+              G
             </span>
           </div>
-          <span className="text-white font-semibold text-sm hidden sm:block">babara</span>
+          <span className="text-white font-semibold text-sm hidden sm:block">GRAPE</span>
         </div>
         {!authLoading && (
           viewer ? (
