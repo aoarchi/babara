@@ -26,6 +26,17 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { QRCodeSVG } from "qrcode.react";
+import { GoogleMap, LoadScript, Marker, InfoWindow } from "@react-google-maps/api";
+
+const MAPS_API_KEY = "AIzaSyAapi6SdaSAzwXhjdmsc8ZYi5pgrsTCGwE";
+const DEFAULT_CENTER = { lat: 37.5665, lng: 126.978 };
+
+interface CrewLocation {
+  uid: string;
+  displayName: string;
+  photoURL: string;
+  location: { lat: number; lng: number };
+}
 
 interface FriendRequest {
   uid: string;
@@ -61,6 +72,9 @@ export default function CrewApp() {
   const [friendRequests, setFriendRequests] = useState<FriendRequest[]>([]);
   const [showQR, setShowQR] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [mainTab, setMainTab] = useState<"feed" | "map">("feed");
+  const [crewLocations, setCrewLocations] = useState<CrewLocation[]>([]);
+  const [selectedCrew, setSelectedCrew] = useState<CrewLocation | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [addressInput, setAddressInput] = useState("");
   const [geocoding, setGeocoding] = useState(false);
@@ -103,6 +117,16 @@ export default function CrewApp() {
       setPosts(all.filter((p) => p.uid === user.uid));
     });
   }, [user]);
+
+  // 크루 위치
+  useEffect(() => {
+    return onSnapshot(collection(db, "crews"), (snap) => {
+      const all = snap.docs
+        .map((d) => ({ uid: d.id, ...d.data() } as any))
+        .filter((c: any) => c.isLocationVisible && c.location);
+      setCrewLocations(all as CrewLocation[]);
+    });
+  }, []);
 
   // 전체 피드 (메인 피드용)
   const [feedPosts, setFeedPosts] = useState<Post[]>([]);
@@ -801,8 +825,65 @@ export default function CrewApp() {
           </div>
         )}
 
+          {/* 피드 / 지도 탭 */}
+          <div className="flex gap-1 bg-white rounded-2xl p-1 shadow-sm">
+            <button
+              onClick={() => setMainTab("feed")}
+              className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${mainTab === "feed" ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-100"}`}
+            >
+              피드
+            </button>
+            <button
+              onClick={() => setMainTab("map")}
+              className={`flex-1 py-2 rounded-xl text-sm font-medium transition-colors ${mainTab === "map" ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-100"}`}
+            >
+              지도
+            </button>
+          </div>
+
+          {/* 지도 탭 */}
+          {mainTab === "map" && (
+            <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+              <LoadScript googleMapsApiKey={MAPS_API_KEY}>
+                <GoogleMap
+                  mapContainerStyle={{ width: "100%", height: "400px" }}
+                  center={crewLocations.length > 0 ? { lat: crewLocations[0].location.lat, lng: crewLocations[0].location.lng } : DEFAULT_CENTER}
+                  zoom={13}
+                  options={{ disableDefaultUI: true, zoomControl: true, gestureHandling: "cooperative" }}
+                >
+                  {crewLocations.map((crew) => (
+                    <Marker
+                      key={crew.uid}
+                      position={{ lat: crew.location.lat, lng: crew.location.lng }}
+                      onClick={() => setSelectedCrew(crew)}
+                    />
+                  ))}
+                  {selectedCrew && (
+                    <InfoWindow
+                      position={{ lat: selectedCrew.location.lat, lng: selectedCrew.location.lng }}
+                      onCloseClick={() => setSelectedCrew(null)}
+                    >
+                      <div
+                        className="flex items-center gap-2 py-0.5 pr-1 cursor-pointer"
+                        onClick={() => window.location.assign(`/babara/profile/?uid=${selectedCrew.uid}`)}
+                      >
+                        {selectedCrew.photoURL && (
+                          <img src={selectedCrew.photoURL} className="w-7 h-7 rounded-full" alt="" referrerPolicy="no-referrer" />
+                        )}
+                        <span className="text-sm font-medium text-slate-900">{selectedCrew.displayName}</span>
+                      </div>
+                    </InfoWindow>
+                  )}
+                </GoogleMap>
+              </LoadScript>
+              {crewLocations.length === 0 && (
+                <div className="py-8 text-center text-sm text-slate-300">위치를 공유 중인 사람이 없어요</div>
+              )}
+            </div>
+          )}
+
           {/* 모바일 내 상태 작성란 */}
-          <div className="md:hidden bg-white rounded-2xl p-3 shadow-sm">
+          <div className={`md:hidden bg-white rounded-2xl p-3 shadow-sm ${mainTab === "map" ? "hidden" : ""}`}>
             <div className="flex gap-2 items-center">
               {user.photoURL ? (
                 <img src={user.photoURL} className="w-8 h-8 rounded-full shrink-0" alt="" referrerPolicy="no-referrer" />
@@ -827,12 +908,12 @@ export default function CrewApp() {
           </div>
 
           {/* 전체 피드 */}
-          {feedPosts.length === 0 && (
+          {mainTab === "feed" && feedPosts.length === 0 && (
             <div className="bg-white rounded-2xl p-8 shadow-sm text-center">
               <p className="text-sm text-slate-300">아직 근황이 없어요</p>
             </div>
           )}
-          {feedPosts.map((post) => (
+          {mainTab === "feed" && feedPosts.map((post) => (
             <div key={post.id} className="bg-white rounded-2xl p-4 shadow-sm">
               <div className="flex items-center gap-3 mb-3">
                 {post.photoURL ? (
