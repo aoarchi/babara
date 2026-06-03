@@ -6,6 +6,8 @@ import { auth, db } from "@/lib/firebase";
 import {
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   onAuthStateChanged,
   User,
 } from "firebase/auth";
@@ -49,6 +51,7 @@ export default function ProfileApp() {
   const [profileLoading, setProfileLoading] = useState(true);
 
   useEffect(() => {
+    getRedirectResult(auth).catch(() => {});
     return onAuthStateChanged(auth, (u) => {
       setViewer(u);
       setAuthLoading(false);
@@ -86,7 +89,14 @@ export default function ProfileApp() {
   }, [viewer, targetUid]);
 
   const signIn = async () => {
-    await signInWithPopup(auth, new GoogleAuthProvider());
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (err: any) {
+      if (err.code === "auth/popup-blocked" || err.code === "auth/popup-closed-by-user") {
+        await signInWithRedirect(auth, provider);
+      }
+    }
   };
 
   const sendRequest = async () => {
