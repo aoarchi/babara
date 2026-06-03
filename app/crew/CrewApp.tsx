@@ -75,6 +75,7 @@ export default function CrewApp() {
   const [mainTab, setMainTab] = useState<"feed" | "map">("feed");
   const [crewLocations, setCrewLocations] = useState<CrewLocation[]>([]);
   const [selectedCrew, setSelectedCrew] = useState<CrewLocation | null>(null);
+  const [shareDone, setShareDone] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [addressInput, setAddressInput] = useState("");
   const [geocoding, setGeocoding] = useState(false);
@@ -244,6 +245,17 @@ export default function CrewApp() {
       { isLocationVisible: false },
       { merge: true }
     );
+  };
+
+  const shareProfile = async () => {
+    const url = `${window.location.origin}/babara/profile/?uid=${user?.uid}`;
+    if (navigator.share) {
+      await navigator.share({ title: "내 GRAPE 프로필", url }).catch(() => {});
+    } else {
+      await navigator.clipboard.writeText(url);
+    }
+    setShareDone(true);
+    setTimeout(() => setShareDone(false), 2000);
   };
 
   const deletePost = async (postId: string) => {
@@ -427,36 +439,20 @@ export default function CrewApp() {
             </button>
           ))}
 
-          {/* QR */}
+          {/* 내 주소 보내기 */}
           <button
-            onClick={() => { setShowQR(!showQR); }}
+            onClick={() => { shareProfile(); setDrawerOpen(false); }}
             className="w-full flex items-center gap-4 px-5 py-3.5 hover:bg-slate-50 transition-colors"
           >
             <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-700">
               <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2}>
-                <rect x="3" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/>
-                <rect x="3" y="16" width="5" height="5"/><path d="M21 16h-3v3"/><path d="M21 21h-3"/><path d="M16 21v-3"/>
+                <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
               </svg>
             </div>
-            <span className="text-sm font-medium text-slate-800">내 QR / 링크</span>
+            <span className="text-sm font-medium text-slate-800">
+              {shareDone ? "완료!" : "내 주소 보내기"}
+            </span>
           </button>
-
-          {showQR && (
-            <div className="mx-5 mb-3 p-4 bg-slate-50 rounded-xl space-y-3">
-              <div className="flex justify-center">
-                <QRCodeSVG
-                  value={`${typeof window !== "undefined" ? window.location.origin : ""}/babara/profile/?uid=${user.uid}`}
-                  size={150}
-                />
-              </div>
-              <button
-                onClick={() => navigator.clipboard.writeText(`${window.location.origin}/babara/profile/?uid=${user.uid}`)}
-                className="w-full py-2 border border-slate-200 text-slate-600 rounded-lg text-xs font-medium"
-              >
-                링크 복사
-              </button>
-            </div>
-          )}
 
           <div className="border-t border-slate-100 my-2" />
 
@@ -660,41 +656,20 @@ export default function CrewApp() {
 
           <div className="border-t border-slate-200 my-1" />
 
-          {/* QR / 링크 공유 */}
-          <div>
-            <button
-              onClick={() => setShowQR(!showQR)}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-200 transition-colors"
-            >
-              <div className="w-9 h-9 bg-slate-200 rounded-full flex items-center justify-center text-slate-700">
-                <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2}>
-                  <rect x="3" y="3" width="5" height="5"/><rect x="16" y="3" width="5" height="5"/>
-                  <rect x="3" y="16" width="5" height="5"/><path d="M21 16h-3v3"/><path d="M21 21h-3"/><path d="M16 21v-3"/>
-                  <path d="M11 3v2"/><path d="M11 8v2"/><path d="M3 11h2"/><path d="M8 11h2"/><path d="M11 13h2"/><path d="M11 18h2"/><path d="M16 11h2"/>
-                </svg>
-              </div>
-              <span className="text-sm font-medium text-slate-800">내 QR / 링크</span>
-            </button>
-            {showQR && (
-              <div className="mx-3 mt-2 p-4 bg-white rounded-xl shadow-sm space-y-3">
-                <div className="flex justify-center">
-                  <QRCodeSVG
-                    value={`${typeof window !== "undefined" ? window.location.origin : ""}/babara/profile/?uid=${user.uid}`}
-                    size={160}
-                  />
-                </div>
-                <button
-                  onClick={() => {
-                    const url = `${window.location.origin}/babara/profile/?uid=${user.uid}`;
-                    navigator.clipboard.writeText(url);
-                  }}
-                  className="w-full py-2 border border-slate-200 text-slate-600 rounded-lg text-xs font-medium hover:bg-slate-50 transition-colors"
-                >
-                  링크 복사
-                </button>
-              </div>
-            )}
-          </div>
+          {/* 내 주소 보내기 */}
+          <button
+            onClick={shareProfile}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-200 transition-colors"
+          >
+            <div className="w-9 h-9 bg-slate-200 rounded-full flex items-center justify-center text-slate-700">
+              <svg viewBox="0 0 24 24" className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2}>
+                <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </div>
+            <span className="text-sm font-medium text-slate-800">
+              {shareDone ? "완료! ✓" : "내 주소 보내기"}
+            </span>
+          </button>
 
           <div className="border-t border-slate-200 my-1" />
 
