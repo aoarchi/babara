@@ -137,22 +137,26 @@ export default function CrewApp() {
     setGeocoding(true);
     try {
       const res = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addressInput)}&key=AIzaSyAapi6SdaSAzwXhjdmsc8ZYi5pgrsTCGwE&language=ko&region=kr&components=country:KR`
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(addressInput + " 한국")}&key=AIzaSyAapi6SdaSAzwXhjdmsc8ZYi5pgrsTCGwE&language=ko&region=kr`
       );
       const data = await res.json();
-      if (data.results?.[0]) {
+      if (data.status === "REQUEST_DENIED") {
+        alert("API 키 오류: Geocoding API가 아직 활성화되지 않았거나 키 설정을 확인해주세요.");
+      } else if (data.results?.[0]) {
         const { lat, lng } = data.results[0].geometry.location;
+        const foundAddr = data.results[0].formatted_address;
         await setDoc(doc(db, "crews", user.uid), {
           location: { lat, lng },
           isLocationVisible: true,
           locationUpdatedAt: serverTimestamp(),
         }, { merge: true });
-        setAddressInput("");
+        setCurrentAddress(foundAddr);
+        setAddressInput(foundAddr);
       } else {
-        alert("주소를 찾을 수 없어요. 더 자세히 입력해보세요.");
+        alert(`주소를 찾을 수 없어요.\n상태: ${data.status}\n더 자세히 입력해보세요 (예: 당진 하사로 132)`);
       }
-    } catch {
-      alert("오류가 발생했어요.");
+    } catch (e) {
+      alert("네트워크 오류가 발생했어요.");
     }
     setGeocoding(false);
   };
@@ -177,15 +181,21 @@ export default function CrewApp() {
         // 역지오코딩으로 주소 표시
         try {
           const res = await fetch(
-            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${loc.lat},${loc.lng}&key=AIzaSyAapi6SdaSAzwXhjdmsc8ZYi5pgrsTCGwE&language=ko`
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${loc.lat},${loc.lng}&key=AIzaSyAapi6SdaSAzwXhjdmsc8ZYi5pgrsTCGwE&language=ko&region=kr`
           );
           const data = await res.json();
           if (data.results?.[0]) {
             const addr = data.results[0].formatted_address;
             setCurrentAddress(addr);
             setAddressInput(addr);
+          } else {
+            setCurrentAddress(`위도 ${loc.lat.toFixed(5)}, 경도 ${loc.lng.toFixed(5)}`);
+            setAddressInput(`위도 ${loc.lat.toFixed(5)}, 경도 ${loc.lng.toFixed(5)}`);
           }
-        } catch {}
+        } catch {
+          setCurrentAddress(`위도 ${loc.lat.toFixed(5)}, 경도 ${loc.lng.toFixed(5)}`);
+          setAddressInput(`위도 ${loc.lat.toFixed(5)}, 경도 ${loc.lng.toFixed(5)}`);
+        }
 
         setLocSharing(false);
       },
